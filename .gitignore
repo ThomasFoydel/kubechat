@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.pid
+
+# Testing
+coverage/
+
+# Local databases
+*.sqlite
+*.db
+
+# Kubernetes local files
+*.secret.yaml
+secrets/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Temporary files
+tmp/
+temp/
