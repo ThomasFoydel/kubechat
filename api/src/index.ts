@@ -1,18 +1,6 @@
-import express from 'express'
+import app from './app'
+import { config } from './config/env'
 
-const app = express()
-
-const PORT = process.env.PORT || 3000
-
-app.use(express.json())
-
-app.get('/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'kubechat-api'
-  })
-})
-
-app.listen(PORT, () => {
-  console.log(`KubeChat API listening on port ${PORT}`)
+app.listen(config.port, () => {
+  console.log(`KubeChat API listening on port ${config.port}`)
 })

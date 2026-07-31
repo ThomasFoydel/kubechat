@@ -13,6 +13,15 @@ build/
 .next/
 out/
 
+# Prisma generated files
+**/generated/prisma/
+
+# Prisma AI/editor metadata
+**/.agents/
+**/.claude/
+**/.windsurf/
+**/skills-lock.json
+
 # Logs
 *.log
 logs/
