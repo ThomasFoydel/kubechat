@@ -13,7 +13,8 @@ COPY src ./src
 
 ENV NODE_ENV=production
 
-RUN npm run build
+ARG DATABASE_URL
+RUN DATABASE_URL=$DATABASE_URL npm run build
 
 EXPOSE 3000
 
