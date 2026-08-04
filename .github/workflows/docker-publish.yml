@@ -33,6 +33,8 @@ jobs:
         with:
           context: ./api
           push: true
+          build-args: |
+            DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test
           tags: |
             ghcr.io/thomasfoydel/kubechat-api:latest
             ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
