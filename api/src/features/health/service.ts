@@ -1,4 +1,4 @@
-import { isDatabaseHealthy } from "./repository";
+import { isDatabaseHealthy } from "./repository"
 
 export async function getHealthStatus() {
   try {
@@ -6,9 +6,10 @@ export async function getHealthStatus() {
 
     return {
       status: 'ok',
-      databsse: 'connected'
+      database: 'connected'
     }
-  } catch {
+  } catch(error) {
+    console.error("error: ", error)
     return {
       status: 'error',
       database: 'unavailable'
