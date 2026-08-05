@@ -9,7 +9,7 @@ export async function getHealthStatus() {
       database: 'connected'
     }
   } catch(error) {
-    console.error("error: ", error)
+    console.error(error)
     return {
       status: 'error',
       database: 'unavailable'
