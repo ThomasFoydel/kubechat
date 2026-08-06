@@ -27,7 +27,9 @@ export async function getReadinessStatus() {
 
   return {
     status: healthy ? 'ok' : 'error',
+    service: 'kubechat-api',
     database,
-    redis
+    redis,
+    timestamp: new Date().toISOString()
   }
 }
