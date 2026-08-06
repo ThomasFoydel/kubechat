@@ -3,7 +3,9 @@ import { getReadinessStatus } from './service'
 
 export async function livenessCheck(_req: Request, res: Response) {
   return res.json({
-    status: 'ok'
+    status: 'ok',
+    service: 'kubechat-api',
+    timestamp: new Date().toISOString()
   })
 }
 
