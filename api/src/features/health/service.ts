@@ -3,7 +3,7 @@ import {
   isRedisHealthy
 } from "./repository"
 
-export async function getHealthStatus() {
+export async function getReadinessStatus() {
   let database = 'connected'
   let redis = 'connected'
 

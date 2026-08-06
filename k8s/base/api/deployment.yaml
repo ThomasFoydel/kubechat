@@ -15,10 +15,24 @@ spec:
       containers:
         - name: api
           image: ghcr.io/thomasfoydel/kubechat-api:latest
-          
+
           ports:
             - containerPort: 3000
-          
+
           envFrom:
             - secretRef:
                 name: kubechat-api-secrets
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20

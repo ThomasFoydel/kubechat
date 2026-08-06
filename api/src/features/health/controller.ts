@@ -1,10 +1,16 @@
 import { Request, Response } from 'express'
-import { getHealthStatus } from './service'
+import { getReadinessStatus } from './service'
 
-export async function healthCheck(_req: Request, res: Response) {
-  const health = await getHealthStatus()
+export async function livenessCheck(_req: Request, res: Response) {
+  return res.json({
+    status: 'ok'
+  })
+}
 
-  if(health.status === 'ok') {
+export async function readinessCheck(_req: Request, res: Response) {
+  const health = await getReadinessStatus()
+
+  if (health.status === 'ok') {
     return res.json(health)
   }
 
