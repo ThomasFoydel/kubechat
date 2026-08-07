@@ -1,7 +1,13 @@
-export default function Home() {
+import { HealthDashboard } from '@/features/health'
+
+export default function DashboardPage() {
   return (
-    <main className="flex min-h-screen items center justify-center">
-      <h1 className="text-5xl font-bold">KubeChat</h1>
+    <main className="p-8">
+      <h1 className="mb-6 text-3xl font-bold">
+        KubeChat Dashboard
+      </h1>
+
+      <HealthDashboard />
     </main>
   )
 }
