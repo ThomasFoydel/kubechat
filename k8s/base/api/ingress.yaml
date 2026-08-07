@@ -1,12 +1,23 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
+
 metadata:
   name: kubechat-api
+
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
 spec:
   ingressClassName: nginx
 
+  tls:
+    - hosts:
+        - kubechat.duckdns.org
+      secretName: kubechat-api-tls
+
   rules:
-    - http:
+    - host: kubechat.duckdns.org
+      http:
         paths:
           - path: /
             pathType: Prefix
