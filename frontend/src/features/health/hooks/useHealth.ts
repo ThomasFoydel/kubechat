@@ -1,24 +1,24 @@
-import { useQuery } from '@tanstack/react-query'
-import {
-  getLiveHealth,
-  getReadyHealth
-} from '../api/health.api'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { healthApi, HealthResponse } from '../api/health.api'
 
 export function useHealth() {
-  const live = useQuery({
-    queryKey: ['health', 'live'],
-    queryFn: getLiveHealth,
-    refetchInterval: 30000
-  })
+  const [data, setData] = useState<HealthResponse>()
+  const [error, setError] = useState<Error>()
+  const [isLoading, setIsLoading] = useState(true)
 
-  const ready = useQuery({
-    queryKey: ['health', 'ready'],
-    queryFn: getReadyHealth,
-    refetchInterval: 30000
-  })
+  useEffect(() => {
+    healthApi
+      .getLive()
+      .then(setData)
+      .catch(setError)
+      .finally(() => setIsLoading(false))
+  }, [])
 
   return {
-    live,
-    ready
+    data,
+    error,
+    isLoading,
   }
 }

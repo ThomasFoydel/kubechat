@@ -1,17 +1,15 @@
 import { apiClient } from '@/lib/api-client'
-import type {
-  LiveHealthResponse,
-  ReadyHealthResponse
-} from '../types'
 
-export function getLiveHealth() {
-  return apiClient<LiveHealthResponse>(
-    '/api/v1/health/live'
-  )
+export interface HealthResponse {
+  status: string
+  service: string
+  timestamp: string
 }
 
-export function getReadyHealth() {
-  return apiClient<ReadyHealthResponse>(
-    '/api/v1/health/ready'
-  )
+export const healthApi = {
+  getLive() {
+    return apiClient<HealthResponse>(
+      '/api/v1/health/live'
+    )
+  },
 }

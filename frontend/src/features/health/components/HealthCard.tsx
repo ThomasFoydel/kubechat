@@ -1,21 +1,36 @@
-import { StatusBadge } from './StatusBadge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
-interface Props {
-  name: string
+interface HealthCardProps {
   status: string
+  service: string
 }
 
 export function HealthCard({
-  name,
-  status
-}: Props) {
+  status,
+  service,
+}: HealthCardProps) {
   return (
-    <div className="rounded border p-4">
-      <h3 className="font-semibold">
-        {name}
-      </h3>
+    <Card className="max-w-md">
+      <CardHeader>
+        <CardTitle>
+          API Health
+        </CardTitle>
+      </CardHeader>
 
-      <StatusBadge status={status} />
-    </div>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          Service: {service}
+        </p>
+
+        <p className="mt-2 text-lg font-medium">
+          {status}
+        </p>
+      </CardContent>
+    </Card>
   )
 }
