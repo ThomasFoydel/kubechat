@@ -1,13 +1,10 @@
+import { AppShell } from '@/components/layout/AppShell'
 import { HealthDashboard } from '@/features/health'
 
-export default function DashboardPage() {
+export default function Home() {
   return (
-    <main className="p-8">
-      <h1 className="mb-6 text-3xl font-bold">
-        KubeChat Dashboard
-      </h1>
-
+    <AppShell>
       <HealthDashboard />
-    </main>
+    </AppShell>
   )
 }
