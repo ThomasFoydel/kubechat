@@ -28,7 +28,7 @@ export function HealthCard({
         </p>
 
         <p className="mt-2 text-lg font-medium">
-          {status}
+          Status: {status}
         </p>
       </CardContent>
     </Card>
