@@ -6,7 +6,7 @@ on:
       - master
 
 permissions:
-  content: read
+  contents: read
   packages: write
 
 jobs:
@@ -23,12 +23,12 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{.secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push frontend Image
+      - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
