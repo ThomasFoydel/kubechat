@@ -17,4 +17,6 @@ export const config = {
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean),
+  sessionSecret: requireEnv('SESSION_SECRET'),
+  sessionTtlSeconds: 60 * 60 * 24 * 7,
 }
