@@ -15,11 +15,22 @@ async function register(input: RegisterRequest) {
 
   const passwordHash = await hashPassword(input.password)
 
-  return userService.createUser({
+  const user = await userService.createUser({
     username: input.username,
     email: input.email,
     passwordHash
   })
+
+  const sessionId = await createSession(user.id)
+
+  return {
+    sessionId,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email
+    }
+  }
 }
 
 async function login(input: LoginRequest) {
