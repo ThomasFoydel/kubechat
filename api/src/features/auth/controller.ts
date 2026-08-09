@@ -3,15 +3,22 @@ import { userService } from '../users/service'
 import { LoginRequest, RegisterRequest } from './dto'
 import { authService } from './service'
 import { AuthenticatedRequest } from './middleware'
+import {
+  setSessionCookie,
+  clearSessionCookie,
+  getSessionCookie
+} from './cookies'
 
 export async function register(
   req: Request<{}, {}, RegisterRequest>,
   res: Response
 ): Promise<void> {
   try {
-    const user = await authService.register(req.body)
+    const result = await authService.register(req.body)
 
-    res.status(201).json(user)
+    setSessionCookie(res, result.sessionId)
+
+    res.status(201).json(result.user)
   } catch (error) {
     if (
       error instanceof Error &&
@@ -36,13 +43,7 @@ export async function login(
   try {
     const result = await authService.login(req.body)
 
-    res.cookie('kubechat_session', result.sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: '/'
-    })
+    setSessionCookie(res, result.sessionId)
 
     res.json(result.user)
   } catch (error) {
@@ -66,18 +67,13 @@ export async function logout(
   req: Request,
   res: Response
 ): Promise<void> {
-  const sessionId = req.cookies?.kubechat_session
+  const sessionId = getSessionCookie(req)
 
   if (sessionId) {
     await authService.logout(sessionId)
   }
 
-  res.clearCookie('kubechat_session', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/'
-  })
+  clearSessionCookie(res)
 
   res.status(204).send()
 }
