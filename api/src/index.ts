@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import app from './app'
 import { config } from './config/env'
 import { connectRedis } from './db/redis'

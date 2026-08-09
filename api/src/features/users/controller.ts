@@ -1,17 +1,5 @@
 import { Request, Response } from 'express'
-import { CreateUserRequest } from './dto'
 import { userService } from './service'
-
-export async function createUser(
-  req: Request<{}, {}, CreateUserRequest>,
-  res: Response
-): Promise<void> {
-  const { username } = req.body
-
-  const user = await userService.createUser(username)
-
-  res.status(201).json(user)
-}
 
 export async function getUserById(
   req: Request<{ id: string }>,
