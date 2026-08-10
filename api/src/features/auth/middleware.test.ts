@@ -5,6 +5,7 @@ import {
   AuthenticatedRequest
 } from './middleware'
 import { getUserIdFromSession } from './session'
+import { Response } from 'express'
 
 vi.mock('./session', () => ({
   getUserIdFromSession: vi.fn()
@@ -23,7 +24,7 @@ describe('requireAuth', () => {
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn()
-    }
+    } as unknown as Response
 
     const next = vi.fn()
 
@@ -50,7 +51,7 @@ describe('requireAuth', () => {
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn()
-    }
+    } as unknown as Response
 
     const next = vi.fn()
 
@@ -81,7 +82,7 @@ describe('requireAuth', () => {
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn()
-    }
+    } as unknown as Response
 
     const next = vi.fn()
 

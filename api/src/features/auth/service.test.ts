@@ -39,10 +39,9 @@ describe('authService.register', () => {
       id: 'user-123',
       username: 'thomas',
       email: 'thomas@example.com',
-      passwordHash: 'hashed-password',
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     })
-
+    
     vi.mocked(createSession).mockResolvedValue('session-123')
 
     const result = await authService.register({
