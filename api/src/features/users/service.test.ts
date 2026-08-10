@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { userService } from './service'
+import {
+  makeDatabaseUser,
+  makeUser
+} from '../../test/factories/user'
 import { userRepository } from './repository'
+import { userService } from './service'
 import { toUserResponse } from './mapper'
 
 vi.mock('./repository', () => ({
@@ -22,20 +25,10 @@ describe('userService.createUser', () => {
   })
 
   it('creates a user and returns the mapped response', async () => {
-    const repositoryUser = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'hashed-password',
-      createdAt: new Date()
-    }
-
-    const userResponse = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
+    const repositoryUser = makeDatabaseUser()
+    const userResponse = makeUser({
       createdAt: repositoryUser.createdAt.toISOString()
-    }
+    })
 
     vi.mocked(userRepository.createUser).mockResolvedValue(
       repositoryUser
@@ -44,15 +37,15 @@ describe('userService.createUser', () => {
     vi.mocked(toUserResponse).mockReturnValue(userResponse)
 
     const result = await userService.createUser({
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'hashed-password'
+      username: repositoryUser.username,
+      email: repositoryUser.email,
+      passwordHash: repositoryUser.passwordHash
     })
 
     expect(userRepository.createUser).toHaveBeenCalledWith(
-      'thomas',
-      'thomas@example.com',
-      'hashed-password'
+      repositoryUser.username,
+      repositoryUser.email,
+      repositoryUser.passwordHash
     )
 
     expect(toUserResponse).toHaveBeenCalledWith(repositoryUser)
@@ -67,20 +60,10 @@ describe('userService.getUserById', () => {
   })
 
   it('returns the mapped user when the user exists', async () => {
-    const repositoryUser = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'hashed-password',
-      createdAt: new Date()
-    }
-
-    const userResponse = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
+    const repositoryUser = makeDatabaseUser()
+    const userResponse = makeUser({
       createdAt: repositoryUser.createdAt.toISOString()
-    }
+    })
 
     vi.mocked(userRepository.getUserById).mockResolvedValue(
       repositoryUser
@@ -88,10 +71,12 @@ describe('userService.getUserById', () => {
 
     vi.mocked(toUserResponse).mockReturnValue(userResponse)
 
-    const result = await userService.getUserById('user-123')
+    const result = await userService.getUserById(
+      repositoryUser.id
+    )
 
     expect(userRepository.getUserById).toHaveBeenCalledWith(
-      'user-123'
+      repositoryUser.id
     )
 
     expect(toUserResponse).toHaveBeenCalledWith(repositoryUser)
@@ -120,28 +105,24 @@ describe('userService.getUserByEmail', () => {
   })
 
   it('returns the repository user for authentication', async () => {
-    const repositoryUser = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'hashed-password',
-      createdAt: new Date()
-    }
+    const repositoryUser = makeDatabaseUser()
 
     vi.mocked(userRepository.getUserByEmail).mockResolvedValue(
       repositoryUser
     )
 
     const result = await userService.getUserByEmail(
-      'thomas@example.com'
+      repositoryUser.email
     )
 
     expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
-      'thomas@example.com'
+      repositoryUser.email
     )
 
     expect(result).toEqual(repositoryUser)
-    expect(result?.passwordHash).toBe('hashed-password')
+    expect(result?.passwordHash).toBe(
+      repositoryUser.passwordHash
+    )
 
     expect(toUserResponse).not.toHaveBeenCalled()
   })

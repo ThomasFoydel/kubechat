@@ -11,6 +11,12 @@ import app from '../../app'
 import { userService } from '../users/service'
 import { authService } from './service'
 import { getUserIdFromSession } from './session'
+import {
+  makeAuthUser,
+  makePassword,
+  makeSessionId
+} from '../../test/factories/auth'
+import { makeUserResponse } from '../../test/factories/user'
 
 vi.mock('./service', () => ({
   authService: {
@@ -40,43 +46,39 @@ describe('POST /api/v1/auth/register', () => {
   })
 
   it('registers a user and sets a session cookie', async () => {
+    const user = makeAuthUser()
+    const password = makePassword()
+    const sessionId = makeSessionId()
+
     vi.mocked(authService.register).mockResolvedValue({
-      sessionId: 'session-123',
-      user: {
-        id: 'user-123',
-        username: 'thomas',
-        email: 'thomas@example.com'
-      }
+      sessionId,
+      user
     })
 
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        username: 'thomas',
-        email: 'thomas@example.com',
-        password: 'password123'
+        username: user.username,
+        email: user.email,
+        password
       })
 
     expect(response.status).toBe(201)
 
-    expect(response.body).toEqual({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com'
-    })
+    expect(response.body).toEqual(user)
 
     expect(response.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         expect.stringContaining(
-          'kubechat_session=session-123'
+          `kubechat_session=${sessionId}`
         )
       ])
     )
 
     expect(authService.register).toHaveBeenCalledWith({
-      username: 'thomas',
-      email: 'thomas@example.com',
-      password: 'password123'
+      username: user.username,
+      email: user.email,
+      password
     })
   })
 
@@ -94,6 +96,9 @@ describe('POST /api/v1/auth/register', () => {
   })
 
   it('returns 409 when the email is already registered', async () => {
+    const user = makeAuthUser()
+    const password = makePassword()
+
     vi.mocked(authService.register).mockRejectedValue(
       new Error('Email already registered')
     )
@@ -101,9 +106,9 @@ describe('POST /api/v1/auth/register', () => {
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        username: 'thomas',
-        email: 'thomas@example.com',
-        password: 'password123'
+        username: user.username,
+        email: user.email,
+        password
       })
 
     expect(response.status).toBe(409)
@@ -120,41 +125,37 @@ describe('POST /api/v1/auth/login', () => {
   })
 
   it('logs in a user and sets a session cookie', async () => {
+    const user = makeAuthUser()
+    const password = makePassword()
+    const sessionId = makeSessionId()
+
     vi.mocked(authService.login).mockResolvedValue({
-      sessionId: 'session-456',
-      user: {
-        id: 'user-123',
-        username: 'thomas',
-        email: 'thomas@example.com'
-      }
+      sessionId,
+      user
     })
 
     const response = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'thomas@example.com',
-        password: 'password123'
+        email: user.email,
+        password
       })
 
     expect(response.status).toBe(200)
 
-    expect(response.body).toEqual({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com'
-    })
+    expect(response.body).toEqual(user)
 
     expect(response.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         expect.stringContaining(
-          'kubechat_session=session-456'
+          `kubechat_session=${sessionId}`
         )
       ])
     )
 
     expect(authService.login).toHaveBeenCalledWith({
-      email: 'thomas@example.com',
-      password: 'password123'
+      email: user.email,
+      password
     })
   })
 
@@ -171,6 +172,8 @@ describe('POST /api/v1/auth/login', () => {
   })
 
   it('returns 401 for invalid credentials', async () => {
+    const user = makeAuthUser()
+
     vi.mocked(authService.login).mockRejectedValue(
       new Error('Invalid email or password')
     )
@@ -178,7 +181,7 @@ describe('POST /api/v1/auth/login', () => {
     const response = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'thomas@example.com',
+        email: user.email,
         password: 'wrong-password'
       })
 
@@ -196,19 +199,21 @@ describe('POST /api/v1/auth/logout', () => {
   })
 
   it('logs out the current session and clears the cookie', async () => {
+    const sessionId = makeSessionId()
+
     vi.mocked(authService.logout).mockResolvedValue()
 
     const response = await request(app)
       .post('/api/v1/auth/logout')
       .set(
         'Cookie',
-        'kubechat_session=session-123'
+        `kubechat_session=${sessionId}`
       )
 
     expect(response.status).toBe(204)
 
     expect(authService.logout).toHaveBeenCalledWith(
-      'session-123'
+      sessionId
     )
 
     expect(response.headers['set-cookie']).toEqual(
@@ -240,39 +245,34 @@ describe('GET /api/v1/auth/me', () => {
   })
 
   it('returns the current user for a valid session', async () => {
+    const user = makeUserResponse()
+    const sessionId = makeSessionId()
+
     vi.mocked(getUserIdFromSession).mockResolvedValue(
-      'user-123'
+      user.id
     )
 
-    vi.mocked(userService.getUserById).mockResolvedValue({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      createdAt: '2026-08-09T00:00:00.000Z'
-    })
+    vi.mocked(userService.getUserById).mockResolvedValue(
+      user
+    )
 
     const response = await request(app)
       .get('/api/v1/auth/me')
       .set(
         'Cookie',
-        'kubechat_session=session-123'
+        `kubechat_session=${sessionId}`
       )
 
     expect(response.status).toBe(200)
 
-    expect(response.body).toEqual({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      createdAt: '2026-08-09T00:00:00.000Z'
-    })
+    expect(response.body).toEqual(user)
 
     expect(getUserIdFromSession).toHaveBeenCalledWith(
-      'session-123'
+      sessionId
     )
 
     expect(userService.getUserById).toHaveBeenCalledWith(
-      'user-123'
+      user.id
     )
   })
 
@@ -290,13 +290,17 @@ describe('GET /api/v1/auth/me', () => {
   })
 
   it('rejects an invalid or expired session', async () => {
-    vi.mocked(getUserIdFromSession).mockResolvedValue(null)
+    const sessionId = makeSessionId()
+
+    vi.mocked(getUserIdFromSession).mockResolvedValue(
+      null
+    )
 
     const response = await request(app)
       .get('/api/v1/auth/me')
       .set(
         'Cookie',
-        'kubechat_session=expired-session'
+        `kubechat_session=${sessionId}`
       )
 
     expect(response.status).toBe(401)
@@ -309,8 +313,11 @@ describe('GET /api/v1/auth/me', () => {
   })
 
   it('rejects a session for a user that no longer exists', async () => {
+    const sessionId = makeSessionId()
+    const deletedUserId = 'deleted-user'
+
     vi.mocked(getUserIdFromSession).mockResolvedValue(
-      'deleted-user'
+      deletedUserId
     )
 
     vi.mocked(userService.getUserById).mockResolvedValue(
@@ -321,7 +328,7 @@ describe('GET /api/v1/auth/me', () => {
       .get('/api/v1/auth/me')
       .set(
         'Cookie',
-        'kubechat_session=session-123'
+        `kubechat_session=${sessionId}`
       )
 
     expect(response.status).toBe(401)

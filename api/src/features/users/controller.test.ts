@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { describe, expect, it, vi } from 'vitest'
+import { makeUser } from '../../test/factories/user'
 import { getUserById } from './controller'
 import { userService } from './service'
 
@@ -11,18 +12,13 @@ vi.mock('./service', () => ({
 
 describe('getUserById', () => {
   it('returns the user when found', async () => {
-    const user = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      createdAt: '2026-08-09T00:00:00.000Z'
-    }
+    const user = makeUser()
 
     vi.mocked(userService.getUserById).mockResolvedValue(user)
 
     const req = {
       params: {
-        id: 'user-123'
+        id: user.id
       }
     } as Request<{ id: string }>
 
@@ -34,7 +30,7 @@ describe('getUserById', () => {
 
     await getUserById(req, res)
 
-    expect(userService.getUserById).toHaveBeenCalledWith('user-123')
+    expect(userService.getUserById).toHaveBeenCalledWith(user.id)
     expect(json).toHaveBeenCalledWith(user)
   })
 
