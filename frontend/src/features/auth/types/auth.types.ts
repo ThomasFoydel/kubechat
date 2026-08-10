@@ -1,23 +1,23 @@
-export interface LoginRequest {
+export interface User {
+  id: string
+  username: string
   email: string
-  password: string
+  createdAt: string
 }
 
-export interface LoginResponse {
-  user: {
-    id: string
-    email: string
-  }
+export interface AuthUserResponse {
+  id: string
+  username: string
+  email: string
 }
 
 export interface RegisterRequest {
+  username: string
   email: string
   password: string
 }
 
-export interface RegisterResponse {
-  user: {
-    id: string
-    email: string
-  }
+export interface LoginRequest {
+  email: string
+  password: string
 }
