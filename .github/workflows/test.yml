@@ -17,6 +17,7 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: postgresql://test:test@localhost:5432/test
+      SESSION_SECRET: test-session-secret
       NODE_ENV: test
 
     steps:
