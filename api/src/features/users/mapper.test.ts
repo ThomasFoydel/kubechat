@@ -1,34 +1,23 @@
 import { describe, expect, it } from 'vitest'
+import { makeDatabaseUser } from '../../test/factories/user'
 import { toUserResponse } from './mapper'
 
 describe('toUserResponse', () => {
   it('maps a user to a user response', () => {
-    const user = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'secret-hash',
-      createdAt: new Date('2026-08-09T12:00:00.000Z')
-    }
+    const user = makeDatabaseUser()
 
     const result = toUserResponse(user)
 
     expect(result).toEqual({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      createdAt: '2026-08-09T12:00:00.000Z'
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      createdAt: user.createdAt.toISOString()
     })
   })
 
   it('does not expose the password hash', () => {
-    const user = {
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      passwordHash: 'secret-hash',
-      createdAt: new Date('2026-08-09T12:00:00.000Z')
-    }
+    const user = makeDatabaseUser()
 
     const result = toUserResponse(user)
 
