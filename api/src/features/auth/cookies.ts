@@ -4,8 +4,8 @@ const SESSION_COOKIE = 'kubechat_session'
 
 const sessionCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: true,
+  sameSite: 'none' as const,
   maxAge: 1000 * 60 * 60 * 24 * 7,
   path: '/'
 }
