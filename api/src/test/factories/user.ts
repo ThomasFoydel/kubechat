@@ -45,3 +45,12 @@ export function makeCreateUserRequest(
     ...overrides
   }
 }
+
+export function makeUserResponse(): UserResponse {
+  return {
+    id: 'user-123',
+    username: 'thomas',
+    email: 'thomas@example.com',
+    createdAt: '2026-08-09T00:00:00.000Z'
+  }
+}

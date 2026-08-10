@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { authService } from './service'
 import { userService } from '../users/service'
+import {
+  makeAuthUser,
+  makePassword,
+  makeSessionId
+} from '../../test/factories/auth'
+import { authService } from './service'
 import { hashPassword, verifyPassword } from './password'
 import {
   createSession,
@@ -31,63 +36,63 @@ describe('authService.register', () => {
   })
 
   it('registers a new user and creates a session', async () => {
+    const password = makePassword()
+    const sessionId = makeSessionId()
+    const authUser = makeAuthUser()
+
     vi.mocked(userService.getUserByEmail).mockResolvedValue(null)
 
-    vi.mocked(hashPassword).mockResolvedValue('hashed-password')
+    vi.mocked(hashPassword).mockResolvedValue(
+      'hashed-password'
+    )
 
     vi.mocked(userService.createUser).mockResolvedValue({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
-      createdAt: new Date().toISOString()
+      ...authUser,
+      createdAt: '2026-08-09T00:00:00.000Z'
     })
-    
-    vi.mocked(createSession).mockResolvedValue('session-123')
+
+    vi.mocked(createSession).mockResolvedValue(sessionId)
 
     const result = await authService.register({
-      username: 'thomas',
-      email: 'thomas@example.com',
-      password: 'password123'
+      username: authUser.username,
+      email: authUser.email,
+      password
     })
 
     expect(userService.getUserByEmail).toHaveBeenCalledWith(
-      'thomas@example.com'
+      authUser.email
     )
 
-    expect(hashPassword).toHaveBeenCalledWith('password123')
+    expect(hashPassword).toHaveBeenCalledWith(password)
 
     expect(userService.createUser).toHaveBeenCalledWith({
-      username: 'thomas',
-      email: 'thomas@example.com',
+      username: authUser.username,
+      email: authUser.email,
       passwordHash: 'hashed-password'
     })
 
-    expect(createSession).toHaveBeenCalledWith('user-123')
+    expect(createSession).toHaveBeenCalledWith(authUser.id)
 
     expect(result).toEqual({
-      sessionId: 'session-123',
-      user: {
-        id: 'user-123',
-        username: 'thomas',
-        email: 'thomas@example.com'
-      }
+      sessionId,
+      user: authUser
     })
   })
 
   it('rejects registration when the email is already registered', async () => {
+    const authUser = makeAuthUser()
+
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
-      id: 'existing-user',
-      username: 'existing',
-      email: 'thomas@example.com',
+      ...authUser,
       passwordHash: 'existing-hash',
       createdAt: new Date()
     })
 
     await expect(
       authService.register({
-        username: 'thomas',
-        email: 'thomas@example.com',
-        password: 'password123'
+        username: authUser.username,
+        email: authUser.email,
+        password: makePassword()
       })
     ).rejects.toThrow('Email already registered')
 
@@ -103,50 +108,50 @@ describe('authService.login', () => {
   })
 
   it('logs in with valid credentials and creates a session', async () => {
+    const authUser = makeAuthUser()
+    const password = makePassword()
+    const sessionId = makeSessionId()
+
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
+      ...authUser,
       passwordHash: 'hashed-password',
       createdAt: new Date()
     })
 
     vi.mocked(verifyPassword).mockResolvedValue(true)
-    vi.mocked(createSession).mockResolvedValue('session-123')
+    vi.mocked(createSession).mockResolvedValue(sessionId)
 
     const result = await authService.login({
-      email: 'thomas@example.com',
-      password: 'password123'
+      email: authUser.email,
+      password
     })
 
     expect(userService.getUserByEmail).toHaveBeenCalledWith(
-      'thomas@example.com'
+      authUser.email
     )
 
     expect(verifyPassword).toHaveBeenCalledWith(
-      'password123',
+      password,
       'hashed-password'
     )
 
-    expect(createSession).toHaveBeenCalledWith('user-123')
+    expect(createSession).toHaveBeenCalledWith(authUser.id)
 
     expect(result).toEqual({
-      sessionId: 'session-123',
-      user: {
-        id: 'user-123',
-        username: 'thomas',
-        email: 'thomas@example.com'
-      }
+      sessionId,
+      user: authUser
     })
   })
 
   it('rejects login when the user does not exist', async () => {
+    const email = makeAuthUser().email
+
     vi.mocked(userService.getUserByEmail).mockResolvedValue(null)
 
     await expect(
       authService.login({
-        email: 'unknown@example.com',
-        password: 'password123'
+        email,
+        password: makePassword()
       })
     ).rejects.toThrow('Invalid email or password')
 
@@ -155,10 +160,11 @@ describe('authService.login', () => {
   })
 
   it('rejects login when the password is incorrect', async () => {
+    const authUser = makeAuthUser()
+    const password = makePassword()
+
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
-      id: 'user-123',
-      username: 'thomas',
-      email: 'thomas@example.com',
+      ...authUser,
       passwordHash: 'hashed-password',
       createdAt: new Date()
     })
@@ -167,13 +173,13 @@ describe('authService.login', () => {
 
     await expect(
       authService.login({
-        email: 'thomas@example.com',
-        password: 'wrong-password'
+        email: authUser.email,
+        password
       })
     ).rejects.toThrow('Invalid email or password')
 
     expect(verifyPassword).toHaveBeenCalledWith(
-      'wrong-password',
+      password,
       'hashed-password'
     )
 
@@ -187,10 +193,12 @@ describe('authService.logout', () => {
   })
 
   it('deletes the session', async () => {
+    const sessionId = makeSessionId()
+
     vi.mocked(deleteSession).mockResolvedValue()
 
-    await authService.logout('session-123')
+    await authService.logout(sessionId)
 
-    expect(deleteSession).toHaveBeenCalledWith('session-123')
+    expect(deleteSession).toHaveBeenCalledWith(sessionId)
   })
 })

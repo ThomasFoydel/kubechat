@@ -1,3 +1,4 @@
+import { Request, Response } from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -5,7 +6,6 @@ import {
   AuthenticatedRequest
 } from './middleware'
 import { getUserIdFromSession } from './session'
-import { Response } from 'express'
 
 vi.mock('./session', () => ({
   getUserIdFromSession: vi.fn()
@@ -19,7 +19,7 @@ describe('requireAuth', () => {
   it('returns 401 when no session cookie is present', async () => {
     const req = {
       cookies: {}
-    } as AuthenticatedRequest
+    } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -46,7 +46,7 @@ describe('requireAuth', () => {
       cookies: {
         kubechat_session: 'invalid-session'
       }
-    } as AuthenticatedRequest
+    } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -77,7 +77,7 @@ describe('requireAuth', () => {
       cookies: {
         kubechat_session: 'valid-session'
       }
-    } as AuthenticatedRequest
+    } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
