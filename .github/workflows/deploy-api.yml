@@ -1,32 +1,26 @@
 name: Deploy API to OKE
 
 on:
-  workflow_run:
-    workflows: ["Docker Publish"]
-    types:
-      - completed
+  push:
     branches:
       - master
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   deploy:
     name: Deploy API
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     env:
       OKE_API_ENDPOINT: ${{ secrets.OKE_API_ENDPOINT }}
       OKE_CA_CERTIFICATE: ${{ secrets.OKE_CA_CERTIFICATE }}
+      OKE_TOKEN: ${{ secrets.OKE_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
@@ -41,18 +35,8 @@ jobs:
             --server="$OKE_API_ENDPOINT" \
             --certificate-authority=/tmp/oke-ca.crt
 
-      - name: Get GitHub OIDC token
-        id: oidc
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const token = await core.getIDToken()
-            core.setOutput('token', token)
-
-      - name: Configure GitHub Actions credentials
-        run: |
           kubectl config set-credentials github-actions \
-            --token="${{ steps.oidc.outputs.token }}"
+            --token="$OKE_TOKEN"
 
           kubectl config set-context kubechat \
             --cluster=kubechat \
@@ -61,15 +45,14 @@ jobs:
 
           kubectl config use-context kubechat
 
-      - name: Verify Kubernetes permissions
+      - name: Verify Kubernetes access
         run: |
           kubectl auth can-i get deployments
           kubectl auth can-i patch deployments
-          kubectl auth can-i update deployments
 
       - name: Deploy API
         run: |
           kubectl set image deployment/kubechat-api \
-            api=ghcr.io/thomasfoydel/kubechat-api:${{ github.event.workflow_run.head_sha }}
+            api=ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
 
           kubectl rollout status deployment/kubechat-api
