@@ -1,9 +1,12 @@
 import { RegisterForm } from '@/features/auth'
+import { AuthRedirect } from '@/features/auth/components/AuthRedirect'
 
 export default function RegisterPage() {
   return (
-    <main>
-      <RegisterForm />
-    </main>
+    <AuthRedirect>
+      <main>
+        <RegisterForm />
+      </main>
+    </AuthRedirect>
   )
 }
