@@ -1,64 +1,52 @@
-name: Deploy API
+name: Deploy API to OKE
 
 on:
   push:
     branches:
       - master
-    paths:
-      - "api/**"
-      - "k8s/base/api/**"
-      - ".github/workflows/deploy-api.yml"
-  workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
+  id-token: write
 
 jobs:
   deploy:
-    name: Deploy API to OKE
+    name: Deploy API
     runs-on: ubuntu-latest
+
+    env:
+      OKE_API_ENDPOINT: ${{ secrets.OKE_API_ENDPOINT }}
+      OKE_CA_CERTIFICATE: ${{ secrets.OKE_CA_CERTIFICATE }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get GitHub OIDC token
-        id: oidc
-        env:
-          AUDIENCE: kubechat-github-actions
-        run: |
-          TOKEN_RESPONSE=$(curl \
-            --fail \
-            --silent \
-            --show-error \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}")
-
-          ID_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.value')
-
-          if [ -z "$ID_TOKEN" ] || [ "$ID_TOKEN" = "null" ]; then
-            echo "Failed to obtain GitHub OIDC token"
-            exit 1
-          fi
-
-          echo "::add-mask::$ID_TOKEN"
-          echo "token=$ID_TOKEN" >> "$GITHUB_OUTPUT"
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
 
       - name: Configure kubectl
-        env:
-          OKE_API_ENDPOINT: ${{ secrets.OKE_API_ENDPOINT }}
-          OKE_CA_CERT: ${{ secrets.OKE_CA_CERT }}
-          OKE_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          echo "$OKE_CA_CERT" | base64 --decode > "$RUNNER_TEMP/oke-ca.crt"
+          echo "$OKE_CA_CERTIFICATE" | base64 --decode > /tmp/oke-ca.crt
 
           kubectl config set-cluster kubechat \
             --server="$OKE_API_ENDPOINT" \
-            --certificate-authority="$RUNNER_TEMP/oke-ca.crt"
+            --certificate-authority=/tmp/oke-ca.crt
 
+      - name: Get GitHub OIDC token
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken()
+            core.setOutput('token', token)
+
+      - name: Configure GitHub Actions credentials
+        run: |
           kubectl config set-credentials github-actions \
-            --token="$OKE_TOKEN"
+            --token="${{ steps.oidc.outputs.token }}"
 
           kubectl config set-context kubechat \
             --cluster=kubechat \
@@ -73,17 +61,9 @@ jobs:
           kubectl auth can-i patch deployments
           kubectl auth can-i update deployments
 
-      - name: Deploy API image
+      - name: Deploy API
         run: |
           kubectl set image deployment/kubechat-api \
-            api=ghcr.io/thomasfoydel/kubechat-api:${GITHUB_SHA}
+            api=ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
 
-      - name: Wait for deployment
-        run: |
-          kubectl rollout status deployment/kubechat-api \
-            --timeout=180s
-
-      - name: Verify deployment
-        run: |
-          kubectl get deployment kubechat-api
-          kubectl get pods -l app=kubechat-api
+          kubectl rollout status deployment/kubechat-api
