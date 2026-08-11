@@ -47,13 +47,15 @@ jobs:
 
       - name: Configure kubectl
         env:
+          OKE_API_ENDPOINT: ${{ secrets.OKE_API_ENDPOINT }}
+          OKE_CA_CERT: ${{ secrets.OKE_CA_CERT }}
           OKE_TOKEN: ${{ steps.oidc.outputs.token }}
-          OKE_CA_CERTIFICATE: ${{ secrets.OKE_CA_CERTIFICATE }}
-          OKE_API_ENDPOINT: ${{ vars.OKE_API_ENDPOINT }}
         run: |
+          echo "$OKE_CA_CERT" | base64 --decode > "$RUNNER_TEMP/oke-ca.crt"
+
           kubectl config set-cluster kubechat \
             --server="$OKE_API_ENDPOINT" \
-            --certificate-authority-data="$OKE_CA_CERTIFICATE"
+            --certificate-authority="$RUNNER_TEMP/oke-ca.crt"
 
           kubectl config set-credentials github-actions \
             --token="$OKE_TOKEN"
