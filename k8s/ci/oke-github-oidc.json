@@ -1,0 +1,57 @@
+{
+  "options": {
+    "addOns": {
+      "isKubernetesDashboardEnabled": false,
+      "isTillerEnabled": false
+    },
+    "admissionControllerOptions": {
+      "isPodSecurityPolicyEnabled": false
+    },
+    "ipFamilies": [
+      "IPv4"
+    ],
+    "kubernetesNetworkConfig": {
+      "podsCidr": "10.244.0.0/16",
+      "servicesCidr": "10.96.0.0/16"
+    },
+    "openIdConnectDiscovery": {
+      "isOpenIdConnectDiscoveryEnabled": false
+    },
+    "openIdConnectTokenAuthenticationConfig": {
+      "isOpenIdConnectAuthEnabled": true,
+      "issuerUrl": "https://token.actions.githubusercontent.com",
+      "clientId": "kubechat-github-actions",
+      "usernameClaim": "sub",
+      "usernamePrefix": "actions-oidc:",
+      "requiredClaims": [
+        {
+          "key": "repository",
+          "value": "thomasfoydel/kubechat"
+        },
+        {
+          "key": "ref",
+          "value": "refs/heads/master"
+        }
+      ],
+      "signingAlgorithms": [
+        "RS256"
+      ]
+    },
+    "persistentVolumeConfig": {
+      "definedTags": {},
+      "freeformTags": {
+        "OKEclusterName": "kubechat"
+      }
+    },
+    "serviceLbConfig": {
+      "backendNsgIds": null,
+      "definedTags": {},
+      "freeformTags": {
+        "OKEclusterName": "kubechat"
+      }
+    },
+    "serviceLbSubnetIds": [
+      "ocid1.subnet.oc1.us-chicago-1.aaaaaaaajmlftav7yuicxulolauzc6acs5tsphad7m2ec6xuhllf3chfsnwa"
+    ]
+  }
+}

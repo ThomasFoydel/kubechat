@@ -1,0 +1,87 @@
+name: Deploy API
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "api/**"
+      - "k8s/base/api/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy API to OKE
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get GitHub OIDC token
+        id: oidc
+        env:
+          AUDIENCE: kubechat-github-actions
+        run: |
+          TOKEN_RESPONSE=$(curl \
+            --fail \
+            --silent \
+            --show-error \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}")
+
+          ID_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.value')
+
+          if [ -z "$ID_TOKEN" ] || [ "$ID_TOKEN" = "null" ]; then
+            echo "Failed to obtain GitHub OIDC token"
+            exit 1
+          fi
+
+          echo "::add-mask::$ID_TOKEN"
+          echo "token=$ID_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure kubectl
+        env:
+          OKE_TOKEN: ${{ steps.oidc.outputs.token }}
+          OKE_CA_CERTIFICATE: ${{ secrets.OKE_CA_CERTIFICATE }}
+          OKE_API_ENDPOINT: ${{ vars.OKE_API_ENDPOINT }}
+        run: |
+          kubectl config set-cluster kubechat \
+            --server="$OKE_API_ENDPOINT" \
+            --certificate-authority-data="$OKE_CA_CERTIFICATE"
+
+          kubectl config set-credentials github-actions \
+            --token="$OKE_TOKEN"
+
+          kubectl config set-context kubechat \
+            --cluster=kubechat \
+            --user=github-actions \
+            --namespace=default
+
+          kubectl config use-context kubechat
+
+      - name: Verify Kubernetes permissions
+        run: |
+          kubectl auth can-i get deployments
+          kubectl auth can-i patch deployments
+          kubectl auth can-i update deployments
+
+      - name: Deploy API image
+        run: |
+          kubectl set image deployment/kubechat-api \
+            api=ghcr.io/thomasfoydel/kubechat-api:${GITHUB_SHA}
+
+      - name: Wait for deployment
+        run: |
+          kubectl rollout status deployment/kubechat-api \
+            --timeout=180s
+
+      - name: Verify deployment
+        run: |
+          kubectl get deployment kubechat-api
+          kubectl get pods -l app=kubechat-api
