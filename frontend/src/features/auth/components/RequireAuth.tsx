@@ -13,11 +13,7 @@ export function RequireAuth({
   children
 }: RequireAuthProps) {
   const router = useRouter()
-
-  const {
-    isLoading,
-    isAuthenticated
-  } = useAuth()
+  const { isLoading, isAuthenticated } = useAuth()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

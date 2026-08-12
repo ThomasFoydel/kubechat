@@ -24,29 +24,33 @@ const CURRENT_USER_QUERY_KEY = ['auth', 'current-user']
 export function useAuth() {
   const queryClient = useQueryClient()
 
-  const currentUserQuery = useQuery<User>({
+  const currentUserQuery = useQuery<User | null>({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: getCurrentUser,
-    retry: false
+    retry: false,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false
   })
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) =>
       loginUser(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CURRENT_USER_QUERY_KEY
-      })
+    onSuccess: user => {
+      queryClient.setQueryData(
+        CURRENT_USER_QUERY_KEY,
+        user
+      )
     }
   })
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterRequest) =>
       registerUser(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CURRENT_USER_QUERY_KEY
-      })
+    onSuccess: user => {
+      queryClient.setQueryData(
+        CURRENT_USER_QUERY_KEY,
+        user
+      )
     }
   })
 
@@ -63,11 +67,9 @@ export function useAuth() {
   return {
     user: currentUserQuery.data ?? null,
 
-    isLoading:
-      currentUserQuery.isLoading,
+    isLoading: currentUserQuery.isLoading,
 
-    isAuthenticated:
-      currentUserQuery.isSuccess,
+    isAuthenticated: !!currentUserQuery.data,
 
     login: loginMutation.mutateAsync,
 
@@ -75,22 +77,16 @@ export function useAuth() {
 
     logout: logoutMutation.mutateAsync,
 
-    isLoggingIn:
-      loginMutation.isPending,
+    isLoggingIn: loginMutation.isPending,
 
-    isRegistering:
-      registerMutation.isPending,
+    isRegistering: registerMutation.isPending,
 
-    isLoggingOut:
-      logoutMutation.isPending,
+    isLoggingOut: logoutMutation.isPending,
 
-    loginError:
-      loginMutation.error,
+    loginError: loginMutation.error,
 
-    registerError:
-      registerMutation.error,
+    registerError: registerMutation.error,
 
-    logoutError:
-      logoutMutation.error
+    logoutError: logoutMutation.error
   }
 }
