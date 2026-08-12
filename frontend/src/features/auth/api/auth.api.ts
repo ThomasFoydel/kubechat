@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 
-import {
+import type {
   AuthUserResponse,
   LoginRequest,
   RegisterRequest,
@@ -40,6 +40,19 @@ export function logout(): Promise<void> {
   )
 }
 
-export function getCurrentUser(): Promise<User> {
-  return apiClient<User>('/api/v1/auth/me')
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    return await apiClient<User>(
+      '/api/v1/auth/me'
+    )
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'API error: 401'
+    ) {
+      return null
+    }
+
+    throw error
+  }
 }
