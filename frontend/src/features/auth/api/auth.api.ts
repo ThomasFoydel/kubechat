@@ -1,23 +1,45 @@
 import { apiClient } from '@/lib/api-client'
-import type {
+
+import {
+  AuthUserResponse,
   LoginRequest,
-  LoginResponse,
   RegisterRequest,
-  RegisterResponse
+  User
 } from '../types/auth.types'
 
-export const authApi = {
-  login(data: LoginRequest) {
-    return apiClient<LoginResponse>('/api/v1/auth/login', {
+export function register(
+  data: RegisterRequest
+): Promise<AuthUserResponse> {
+  return apiClient<AuthUserResponse>(
+    '/api/v1/auth/register',
+    {
       method: 'POST',
       body: JSON.stringify(data)
-    })
-  },
+    }
+  )
+}
 
-  register(data: RegisterRequest) {
-    return apiClient<RegisterResponse>('/api/v1/auth/register', {
+export function login(
+  data: LoginRequest
+): Promise<AuthUserResponse> {
+  return apiClient<AuthUserResponse>(
+    '/api/v1/auth/login',
+    {
       method: 'POST',
       body: JSON.stringify(data)
-    })
-  }
+    }
+  )
+}
+
+export function logout(): Promise<void> {
+  return apiClient<void>(
+    '/api/v1/auth/logout',
+    {
+      method: 'POST'
+    }
+  )
+}
+
+export function getCurrentUser(): Promise<User> {
+  return apiClient<User>('/api/v1/auth/me')
 }

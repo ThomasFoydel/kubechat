@@ -3,19 +3,35 @@
 import { useAuth } from '../hooks/useAuth'
 
 export function RegisterForm() {
-  const { register } = useAuth()
+  const {
+    register,
+    isRegistering,
+    registerError
+  } = useAuth()
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
+    event: React.SyntheticEvent<HTMLFormElement>
   ) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
 
+    const username = String(formData.get('username'))
     const email = String(formData.get('email'))
     const password = String(formData.get('password'))
+    const confirmPassword = String(
+      formData.get('confirm-password')
+    )
 
-    await register(email, password)
+    if (password !== confirmPassword) {
+      return
+    }
+
+    await register({
+      username,
+      email,
+      password
+    })
   }
 
   return (
@@ -23,6 +39,17 @@ export function RegisterForm() {
       <h1>Create your KubeChat account</h1>
 
       <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            required
+          />
+        </div>
+
         <div>
           <label htmlFor="email">Email</label>
           <input
@@ -58,8 +85,19 @@ export function RegisterForm() {
           />
         </div>
 
-        <button type="submit">
-          Create account
+        {registerError && (
+          <p role="alert">
+            {registerError.message}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={isRegistering}
+        >
+          {isRegistering
+            ? 'Creating account...'
+            : 'Create account'}
         </button>
       </form>
     </div>
