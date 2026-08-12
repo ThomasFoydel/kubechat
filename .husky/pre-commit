@@ -1,2 +1,2 @@
-cd api
-npm run test
+npm run test --prefix api
+npm run test --prefix frontend
