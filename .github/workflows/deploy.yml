@@ -49,6 +49,23 @@ jobs:
         run: |
           kubectl auth can-i get deployments
           kubectl auth can-i patch deployments
+          kubectl auth can-i create jobs
+          kubectl auth can-i get jobs
+          kubectl auth can-i delete jobs
+
+      - name: Run database migrations
+        run: |
+          kubectl delete job kubechat-api-migrations --ignore-not-found
+
+          sed \
+            "s|MIGRATION_IMAGE|ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}|" \
+            k8s/migrations/job.yaml \
+            | kubectl apply -f -
+
+          kubectl wait \
+            --for=condition=complete \
+            --timeout=300s \
+            job/kubechat-api-migrations
 
       - name: Deploy API
         run: |
