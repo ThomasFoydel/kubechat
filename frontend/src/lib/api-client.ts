@@ -2,10 +2,10 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
   'https://kubechat.duckdns.org'
 
-export async function apiClient(
+export async function apiClient<T>(
   path: string,
   options: RequestInit = {}
-): Promise<any> {
+): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     credentials: 'include',
@@ -19,5 +19,5 @@ export async function apiClient(
     throw new Error(`API error: ${response.status}`)
   }
 
-  return response.json()
+  return response.json() as Promise<T>
 }
