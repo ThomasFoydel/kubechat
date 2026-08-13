@@ -1,10 +1,16 @@
+'use client'
+
 import Link from 'next/link'
 import {
   Activity,
   LayoutDashboard,
+  LogOut,
   MessageSquare,
   Users,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
+import { useAuth } from '@/features/auth'
 
 const navigation = [
   {
@@ -38,6 +44,17 @@ export function Sidebar({
   open,
   onClose
 }: SidebarProps) {
+  const router = useRouter()
+  const {
+    logout,
+    isLoggingOut
+  } = useAuth()
+
+  async function handleLogout() {
+    await logout()
+    router.replace('/login')
+  }
+
   return (
     <>
       {open && (
@@ -64,7 +81,7 @@ export function Sidebar({
           </h1>
         </div>
 
-        <nav className="space-y-1 p-4">
+        <nav className="flex-1 space-y-1 p-4">
           {navigation.map((item) => {
             const Icon = item.icon
 
@@ -81,6 +98,21 @@ export function Sidebar({
             )
           })}
         </nav>
+
+        <div className="border-t border-border p-4">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <LogOut className="h-4 w-4" />
+
+            {isLoggingOut
+              ? 'Signing out...'
+              : 'Sign out'}
+          </button>
+        </div>
       </aside>
     </>
   )

@@ -29,7 +29,7 @@ export function AppShell({
           }
         />
 
-        <main className="flex-1 p-6">
+        <main className="min-h-0 flex-1">
           {children}
         </main>
       </div>
