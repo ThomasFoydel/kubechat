@@ -1,3 +1,5 @@
+import { DashboardCard } from '@/features/dashboard/components/DashboardCard'
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
@@ -27,26 +29,6 @@ export default function DashboardPage() {
           value="0"
         />
       </div>
-    </div>
-  )
-}
-
-function DashboardCard({
-  title,
-  value,
-}: {
-  title: string
-  value: string
-}) {
-  return (
-    <div className="rounded-lg border p-6">
-      <p className="text-sm text-muted-foreground">
-        {title}
-      </p>
-
-      <p className="mt-2 text-2xl font-bold">
-        {value}
-      </p>
     </div>
   )
 }

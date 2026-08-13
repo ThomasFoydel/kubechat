@@ -1,4 +1,7 @@
-import { apiClient } from '@/lib/api-client'
+import {
+  ApiError,
+  apiClient
+} from '@/lib/api-client'
 
 import type {
   AuthUserResponse,
@@ -47,8 +50,8 @@ export async function getCurrentUser(): Promise<User | null> {
     )
   } catch (error) {
     if (
-      error instanceof Error &&
-      error.message === 'API error: 401'
+      error instanceof ApiError &&
+      error.status === 401
     ) {
       return null
     }

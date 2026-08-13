@@ -1,10 +1,5 @@
-import { AppShell } from '@/components/layout/AppShell'
-import { HealthDashboard } from '@/features/health'
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  return (
-    <AppShell>
-      <HealthDashboard />
-    </AppShell>
-  )
+  redirect('/chat')
 }
