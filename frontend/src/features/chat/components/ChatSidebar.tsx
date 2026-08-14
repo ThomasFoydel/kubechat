@@ -6,11 +6,14 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import type { Conversation } from '../types/conversation.types'
+import type {
+  Conversation
+} from '../types/conversation.types'
 
 interface ChatSidebarProps {
   conversations: Conversation[]
   selectedConversationId: string | null
+  selectedConversation: Conversation | null
   onNewChat: () => void
   isCreating: boolean
   isLoading: boolean
@@ -19,6 +22,7 @@ interface ChatSidebarProps {
 export function ChatSidebar({
   conversations,
   selectedConversationId,
+  selectedConversation,
   onNewChat,
   isCreating,
   isLoading
@@ -36,8 +40,9 @@ export function ChatSidebar({
   return (
     <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-[#0f0f11] md:flex">
       <div className="flex h-16 shrink-0 items-center border-b border-border px-4">
-        <h2 className="text-sm font-semibold tracking-wide">
-          KubeChat
+        <h2 className="truncate text-sm font-semibold tracking-wide">
+          {selectedConversation?.title ??
+            'No conversation selected'}
         </h2>
       </div>
 

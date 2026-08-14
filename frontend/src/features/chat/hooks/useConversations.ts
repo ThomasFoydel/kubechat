@@ -11,6 +11,10 @@ import {
   getConversations
 } from '../api/chat.api'
 
+import type {
+  ConversationVisibility
+} from '../types/conversation.types'
+
 const CONVERSATIONS_QUERY_KEY = [
   'chat',
   'conversations'
@@ -29,8 +33,17 @@ export function useConversations() {
 
   const createMutation =
     useMutation({
-      mutationFn: (title?: string) =>
-        createConversation(title),
+      mutationFn: ({
+        title,
+        visibility
+      }: {
+        title?: string
+        visibility: ConversationVisibility
+      }) =>
+        createConversation(
+          title,
+          visibility
+        ),
 
       onSuccess: conversation => {
         queryClient.setQueryData(
@@ -52,11 +65,13 @@ export function useConversations() {
     })
 
   async function handleCreateConversation(
-    title?: string
+    title?: string,
+    visibility: ConversationVisibility = 'PRIVATE'
   ) {
-    return createMutation.mutateAsync(
-      title
-    )
+    return createMutation.mutateAsync({
+      title,
+      visibility
+    })
   }
 
   return {

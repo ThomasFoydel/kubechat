@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import {
   Activity,
   LayoutDashboard,
@@ -10,9 +9,23 @@ import {
   Users,
   X
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import {
+  usePathname,
+  useRouter
+} from 'next/navigation'
+import { useState } from 'react'
 
 import { useAuth } from '@/features/auth'
+import {
+  NewConversationDialog
+} from '@/features/chat/components/NewConversationDialog'
+import {
+  useConversations
+} from '@/features/chat/hooks/useConversations'
+import type {
+  ConversationVisibility
+} from '@/features/chat/types/conversation.types'
 
 const navigation = [
   {
@@ -47,15 +60,82 @@ export function Sidebar({
   onClose
 }: SidebarProps) {
   const router = useRouter()
+  const pathname = usePathname()
+
+  const [
+    isNewConversationOpen,
+    setIsNewConversationOpen
+  ] = useState(false)
 
   const {
     logout,
     isLoggingOut
   } = useAuth()
 
+  const {
+    conversations,
+    createConversation,
+    isCreating
+  } = useConversations()
+
+  const currentConversationId =
+    pathname.startsWith('/chat/')
+      ? pathname.split('/')[2]
+      : null
+
+  const currentConversation =
+    conversations.find(
+      conversation =>
+        conversation.id ===
+        currentConversationId
+    )
+
   async function handleLogout() {
     await logout()
     router.replace('/login')
+  }
+
+  function handleNewChat() {
+    if (isCreating) {
+      return
+    }
+
+    setIsNewConversationOpen(true)
+  }
+
+  async function handleCreateConversation(
+    title: string,
+    visibility: ConversationVisibility
+  ) {
+    try {
+      const conversation =
+        await createConversation(
+          title,
+          visibility
+        )
+
+      setIsNewConversationOpen(false)
+      onClose()
+
+      router.push(
+        `/chat/${conversation.id}`
+      )
+    } catch (error) {
+      console.error(
+        'Failed to create conversation:',
+        error
+      )
+    }
+  }
+
+  function handleConversationSelect(
+    conversationId: string
+  ) {
+    onClose()
+
+    router.push(
+      `/chat/${conversationId}`
+    )
   }
 
   return (
@@ -95,7 +175,7 @@ export function Sidebar({
 
         <div className="flex-1 overflow-y-auto">
           <nav className="space-y-1 p-4">
-            {navigation.map((item) => {
+            {navigation.map(item => {
               const Icon = item.icon
 
               return (
@@ -114,30 +194,64 @@ export function Sidebar({
 
           <div className="border-t border-border px-4 py-4 md:hidden">
             <div className="mb-3 flex items-center justify-between">
-              <p className="px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Chats
-              </p>
+              <div className="min-w-0">
+                <p className="px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Conversation
+                </p>
+
+                <p className="mt-1 truncate px-2 text-sm font-medium">
+                  {currentConversation?.title ??
+                    'No conversation selected'}
+                </p>
+              </div>
 
               <button
                 type="button"
                 aria-label="New chat"
-                className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                onClick={handleNewChat}
+                disabled={isCreating}
+                className="shrink-0 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus size={17} />
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex w-full items-center gap-3 rounded-lg bg-muted px-3 py-2.5 text-left text-sm"
-            >
-              <MessageSquare size={17} />
+            <div className="space-y-1">
+              {conversations.map(
+                conversation => (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() =>
+                      handleConversationSelect(
+                        conversation.id
+                      )
+                    }
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${currentConversationId ===
+                        conversation.id
+                        ? 'bg-muted'
+                        : 'hover:bg-muted/50'
+                      }`}
+                  >
+                    <MessageSquare
+                      size={17}
+                    />
 
-              <span className="truncate">
-                Current conversation
-              </span>
-            </button>
+                    <span className="truncate">
+                      {conversation.title ??
+                        'New conversation'}
+                    </span>
+                  </button>
+                )
+              )}
+
+              {conversations.length ===
+                0 && (
+                  <p className="px-2 py-2 text-xs text-muted-foreground">
+                    No conversations yet.
+                  </p>
+                )}
+            </div>
           </div>
         </div>
 
@@ -156,6 +270,17 @@ export function Sidebar({
           </button>
         </div>
       </aside>
+
+      <NewConversationDialog
+        open={isNewConversationOpen}
+        onClose={() =>
+          setIsNewConversationOpen(false)
+        }
+        onSubmit={
+          handleCreateConversation
+        }
+        isCreating={isCreating}
+      />
     </>
   )
 }

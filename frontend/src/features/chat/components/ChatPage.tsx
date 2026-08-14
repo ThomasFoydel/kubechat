@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import type {
+  ConversationVisibility
+} from '../types/conversation.types'
+
 import { useChat } from '../hooks/useChat'
 import { useConversations } from '../hooks/useConversations'
 
@@ -10,6 +14,9 @@ import { ChatSidebar } from './ChatSidebar'
 import { EmptyChat } from './EmptyChat'
 import { MessageComposer } from './MessageComposer'
 import { MessageList } from './MessageList'
+import {
+  NewConversationDialog
+} from './NewConversationDialog'
 
 interface ChatPageProps {
   conversationId?: string
@@ -22,6 +29,11 @@ export function ChatPage({
 
   const [message, setMessage] =
     useState('')
+
+  const [
+    isNewConversationOpen,
+    setIsNewConversationOpen
+  ] = useState(false)
 
   const {
     conversations,
@@ -39,14 +51,26 @@ export function ChatPage({
     conversationId || null
   )
 
-  async function handleNewChat() {
+  function handleNewChat() {
     if (isCreating) {
       return
     }
 
+    setIsNewConversationOpen(true)
+  }
+
+  async function handleCreateConversation(
+    title: string,
+    visibility: ConversationVisibility
+  ) {
     try {
       const conversation =
-        await createConversation()
+        await createConversation(
+          title,
+          visibility
+        )
+
+      setIsNewConversationOpen(false)
 
       router.push(
         `/chat/${conversation.id}`
@@ -83,73 +107,97 @@ export function ChatPage({
   const isConnected =
     connectionStatus === 'connected'
 
-  return (
-    <div className="flex h-full min-h-0 bg-background text-foreground">
-      <ChatSidebar
-        conversations={conversations}
-        selectedConversationId={
-          conversationId || null
-        }
-        onNewChat={handleNewChat}
-        isCreating={isCreating}
-        isLoading={
-          isLoadingConversations
-        }
-      />
+  const selectedConversation =
+    conversations.find(
+      conversation =>
+        conversation.id ===
+        conversationId
+    )
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex h-12 shrink-0 items-center justify-end border-b border-border px-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span
-              className={`h-2 w-2 rounded-full ${connectionStatus ===
+  return (
+    <>
+      <div className="flex h-full min-h-0 bg-background text-foreground">
+        <ChatSidebar
+          conversations={conversations}
+          selectedConversationId={
+            conversationId || null
+          }
+          selectedConversation={
+            selectedConversation ?? null
+          }
+          onNewChat={handleNewChat}
+          isCreating={isCreating}
+          isLoading={
+            isLoadingConversations
+          }
+        />
+
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex h-12 shrink-0 items-center justify-end border-b border-border px-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  connectionStatus ===
                   'connected'
-                  ? 'bg-green-500'
-                  : connectionStatus ===
-                    'error'
+                    ? 'bg-green-500'
+                    : connectionStatus ===
+                      'error'
                     ? 'bg-red-500'
                     : 'bg-yellow-500'
                 }`}
-            />
+              />
 
-            <span>
-              {connectionStatus ===
+              <span>
+                {connectionStatus ===
                 'connected'
-                ? 'Connected'
-                : connectionStatus ===
-                  'reconnecting'
+                  ? 'Connected'
+                  : connectionStatus ===
+                    'reconnecting'
                   ? 'Reconnecting...'
                   : connectionStatus ===
                     'connecting'
-                    ? 'Connecting...'
-                    : connectionStatus ===
-                      'error'
-                      ? 'Connection error'
-                      : 'Disconnected'}
-            </span>
+                  ? 'Connecting...'
+                  : connectionStatus ===
+                    'error'
+                  ? 'Connection error'
+                  : 'Disconnected'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <section className="min-h-0 flex-1 overflow-y-auto p-4">
-          {hasConversation ? (
-            <MessageList
-              messages={messages}
-            />
-          ) : (
-            <EmptyChat />
-          )}
+          <section className="min-h-0 flex-1 overflow-y-auto p-4">
+            {hasConversation ? (
+              <MessageList
+                messages={messages}
+              />
+            ) : (
+              <EmptyChat />
+            )}
+          </section>
+
+          <MessageComposer
+            message={message}
+            onMessageChange={setMessage}
+            onSubmit={handleSubmit}
+            disabled={
+              !conversationId ||
+              !isConnected
+            }
+            error={sendError}
+          />
         </section>
+      </div>
 
-        <MessageComposer
-          message={message}
-          onMessageChange={setMessage}
-          onSubmit={handleSubmit}
-          disabled={
-            !conversationId ||
-            !isConnected
-          }
-          error={sendError}
-        />
-      </section>
-    </div>
+      <NewConversationDialog
+        open={isNewConversationOpen}
+        onClose={() =>
+          setIsNewConversationOpen(false)
+        }
+        onSubmit={
+          handleCreateConversation
+        }
+        isCreating={isCreating}
+      />
+    </>
   )
 }
