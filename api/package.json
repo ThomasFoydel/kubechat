@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && node scripts/copy-graphql.js",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
