@@ -9,6 +9,7 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+COPY scripts ./scripts
 COPY src ./src
 
 ENV NODE_ENV=production
