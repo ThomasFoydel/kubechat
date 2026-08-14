@@ -7,6 +7,17 @@ generator client {
   output   = "../generated/prisma"
 }
 
+enum ConversationVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ConversationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 model User {
   id           String               @id @default(uuid())
   username     String               @unique
@@ -19,31 +30,34 @@ model User {
 }
 
 model Conversation {
-  id        String               @id @default(uuid())
-  title     String?
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  id         String                 @id @default(uuid())
+  title      String?
+  visibility ConversationVisibility @default(PRIVATE)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
 
-  members   ConversationMember[]
-  messages  Message[]
+  members  ConversationMember[]
+  messages Message[]
 }
 
 model ConversationMember {
   conversationId String
   userId         String
-  joinedAt       DateTime @default(now())
+  role           ConversationMemberRole @default(MEMBER)
+  joinedAt       DateTime               @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([conversationId, userId])
   @@index([userId])
+  @@index([conversationId, role])
 }
 
 model Message {
-  id             String       @id @default(uuid())
+  id             String   @id @default(uuid())
   content        String
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime @default(now())
 
   conversationId String
   userId         String

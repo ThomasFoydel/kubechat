@@ -2,17 +2,32 @@ import 'dotenv/config'
 
 import app from './app'
 import { config } from './config/env'
-import { connectRedis } from './db/redis'
+import { getGraphQLMiddleware } from './graphql/server'
 
 async function start() {
-  await connectRedis()
+  const graphqlMiddleware =
+    await getGraphQLMiddleware()
 
-  app.listen(config.port, () => {
-    console.log(`KubeChat API listening on port ${config.port}`)
-  })
+  app.use(
+    '/graphql',
+    graphqlMiddleware
+  )
+
+  app.listen(
+    config.port,
+    () => {
+      console.log(
+        `KubeChat API listening on port ${config.port}`
+      )
+    }
+  )
 }
 
-start().catch((err) => {
-  console.error('Failed to start application:', err)
+start().catch((error) => {
+  console.error(
+    'Failed to start server',
+    error
+  )
+
   process.exit(1)
 })
