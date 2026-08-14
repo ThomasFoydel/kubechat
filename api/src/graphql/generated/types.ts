@@ -33,10 +33,6 @@ export type CreateConversationInput = {
   visibility?: InputMaybe<ConversationVisibility>;
 };
 
-export type CreateMessageInput = {
-  content: Scalars['String']['input'];
-};
-
 export type Message = {
   __typename?: 'Message';
   content: Scalars['String']['output'];
@@ -49,7 +45,6 @@ export type Message = {
 export type Mutation = {
   __typename?: 'Mutation';
   createConversation: Conversation;
-  createMessage: Message;
   deleteConversation: Scalars['Boolean']['output'];
   updateConversation: Conversation;
 };
@@ -57,12 +52,6 @@ export type Mutation = {
 
 export type MutationCreateConversationArgs = {
   input: CreateConversationInput;
-};
-
-
-export type MutationCreateMessageArgs = {
-  conversationId: Scalars['ID']['input'];
-  input: CreateMessageInput;
 };
 
 
@@ -179,7 +168,6 @@ export type ResolversTypes = ResolversObject<{
   Conversation: ResolverTypeWrapper<ConversationResponse>;
   ConversationVisibility: ConversationVisibility;
   CreateConversationInput: CreateConversationInput;
-  CreateMessageInput: CreateMessageInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Message: ResolverTypeWrapper<Message>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
@@ -194,7 +182,6 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean']['output'];
   Conversation: ConversationResponse;
   CreateConversationInput: CreateConversationInput;
-  CreateMessageInput: CreateMessageInput;
   ID: Scalars['ID']['output'];
   Message: Message;
   Mutation: Record<PropertyKey, never>;
@@ -223,7 +210,6 @@ export type MessageResolvers<ContextType = GraphQLContext, ParentType extends Re
 
 export type MutationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationCreateConversationArgs, 'input'>>;
-  createMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationCreateMessageArgs, 'conversationId' | 'input'>>;
   deleteConversation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteConversationArgs, 'id'>>;
   updateConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationUpdateConversationArgs, 'id' | 'input'>>;
 }>;
