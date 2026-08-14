@@ -27,6 +27,22 @@ spec:
                 port:
                   number: 3000
 
+          - path: /graphql
+            pathType: Prefix
+            backend:
+              service:
+                name: kubechat-api
+                port:
+                  number: 3000
+
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: kubechat-api
+                port:
+                  number: 3000
+
           - path: /
             pathType: Prefix
             backend:
