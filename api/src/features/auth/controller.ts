@@ -1,13 +1,13 @@
 import { Request, Response } from 'express'
 import { userService } from '../users/service'
-import { LoginRequest, RegisterRequest } from './dto'
-import { authService } from './service'
-import { AuthenticatedRequest } from './middleware'
 import {
-  setSessionCookie,
   clearSessionCookie,
-  getSessionCookie
+  getSessionCookie,
+  setSessionCookie
 } from './cookies'
+import { LoginRequest, RegisterRequest } from './dto'
+import { AuthenticatedRequest } from './middleware'
+import { authService } from './service'
 
 export async function register(
   req: Request<{}, {}, RegisterRequest>,
@@ -20,6 +20,8 @@ export async function register(
 
     res.status(201).json(result.user)
   } catch (error) {
+    console.error('Register error:', error)
+
     if (
       error instanceof Error &&
       error.message === 'Email already registered'
@@ -47,6 +49,8 @@ export async function login(
 
     res.json(result.user)
   } catch (error) {
+    console.error('Login error:', error)
+
     if (
       error instanceof Error &&
       error.message === 'Invalid email or password'

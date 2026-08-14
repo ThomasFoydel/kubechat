@@ -29,6 +29,7 @@
     "pg": "^8.22.0",
     "prisma": "^7.9.1",
     "redis": "^6.2.0",
+    "ws": "^8.21.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -42,10 +43,12 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.2",
     "@types/supertest": "^7.2.1",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wscat": "^6.1.0"
   }
 }

@@ -5,14 +5,3 @@ type Message {
   userId: ID!
   conversationId: ID!
 }
-
-input CreateMessageInput {
-  content: String!
-}
-
-extend type Mutation {
-  createMessage(
-    conversationId: ID!
-    input: CreateMessageInput!
-  ): Message!
-}
