@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => {
     zAdd: vi.fn(),
     zRem: vi.fn(),
     zRemRangeByScore: vi.fn(),
-    zRange: vi.fn(),
+    zRangeByScore: vi.fn(),
     quit: vi.fn()
   }
 
@@ -75,17 +75,35 @@ describe('redisPubSub', () => {
     mocks.publisher.isOpen = false
     mocks.subscriber.isOpen = false
 
-    mocks.publisher.zRange.mockResolvedValue([])
-    mocks.publisher.zRemRangeByScore.mockResolvedValue(0)
+    mocks.publisher.zRangeByScore.mockResolvedValue(
+      []
+    )
+
+    mocks.publisher.zRemRangeByScore.mockResolvedValue(
+      0
+    )
+
     mocks.publisher.zAdd.mockResolvedValue(1)
     mocks.publisher.zRem.mockResolvedValue(1)
     mocks.publisher.publish.mockResolvedValue(1)
-    mocks.publisher.connect.mockResolvedValue(undefined)
-    mocks.publisher.quit.mockResolvedValue(undefined)
+    mocks.publisher.connect.mockResolvedValue(
+      undefined
+    )
+    mocks.publisher.quit.mockResolvedValue(
+      undefined
+    )
 
-    mocks.subscriber.connect.mockResolvedValue(undefined)
-    mocks.subscriber.quit.mockResolvedValue(undefined)
-    mocks.subscriber.subscribe.mockResolvedValue(undefined)
+    mocks.subscriber.connect.mockResolvedValue(
+      undefined
+    )
+
+    mocks.subscriber.quit.mockResolvedValue(
+      undefined
+    )
+
+    mocks.subscriber.subscribe.mockResolvedValue(
+      undefined
+    )
   })
 
   describe('initializeRedisPubSub', () => {
@@ -158,10 +176,12 @@ describe('redisPubSub', () => {
 
   describe('getConversationNodes', () => {
     it('removes expired nodes before returning active nodes', async () => {
-      mocks.publisher.zRange.mockResolvedValue([
-        'node-1',
-        'node-2'
-      ])
+      mocks.publisher.zRangeByScore.mockResolvedValue(
+        [
+          'node-1',
+          'node-2'
+        ]
+      )
 
       const result =
         await getConversationNodes(
@@ -177,7 +197,7 @@ describe('redisPubSub', () => {
       )
 
       expect(
-        mocks.publisher.zRange
+        mocks.publisher.zRangeByScore
       ).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
         expect.any(Number),
@@ -193,14 +213,17 @@ describe('redisPubSub', () => {
 
   describe('publishMessageCreated', () => {
     it('publishes the event only to nodes subscribed to the conversation', async () => {
-      mocks.publisher.zRange.mockResolvedValue([
-        'node-1',
-        'node-2'
-      ])
+      mocks.publisher.zRangeByScore.mockResolvedValue(
+        [
+          'node-1',
+          'node-2'
+        ]
+      )
 
       const message = {
         id: 'message-123',
-        conversationId: 'conversation-123',
+        conversationId:
+          'conversation-123',
         userId: 'user-123',
         content: 'Hello',
         createdAt:
@@ -232,11 +255,14 @@ describe('redisPubSub', () => {
     })
 
     it('does not publish when no nodes are subscribed', async () => {
-      mocks.publisher.zRange.mockResolvedValue([])
+      mocks.publisher.zRangeByScore.mockResolvedValue(
+        []
+      )
 
       const message = {
         id: 'message-123',
-        conversationId: 'conversation-123',
+        conversationId:
+          'conversation-123',
         userId: 'user-123',
         content: 'Hello',
         createdAt:
@@ -254,13 +280,14 @@ describe('redisPubSub', () => {
     })
 
     it('publishes a structured message.created event', async () => {
-      mocks.publisher.zRange.mockResolvedValue([
-        'node-1'
-      ])
+      mocks.publisher.zRangeByScore.mockResolvedValue(
+        ['node-1']
+      )
 
       const message = {
         id: 'message-123',
-        conversationId: 'conversation-123',
+        conversationId:
+          'conversation-123',
         userId: 'user-123',
         content: 'Hello',
         createdAt:

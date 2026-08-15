@@ -1,22 +1,21 @@
 'use client'
 
+import {
+  Trash2
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import type {
-  ConversationVisibility
-} from '../types/conversation.types'
+import { Button } from '@/components/ui/button'
 
 import { useChat } from '../hooks/useChat'
 import { useConversations } from '../hooks/useConversations'
 
 import { ChatSidebar } from './ChatSidebar'
+import { ConfirmationDialog } from './ConfirmationDialog'
 import { EmptyChat } from './EmptyChat'
 import { MessageComposer } from './MessageComposer'
 import { MessageList } from './MessageList'
-import {
-  NewConversationDialog
-} from './NewConversationDialog'
 
 interface ChatPageProps {
   conversationId?: string
@@ -31,15 +30,17 @@ export function ChatPage({
     useState('')
 
   const [
-    isNewConversationOpen,
-    setIsNewConversationOpen
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen
   ] = useState(false)
 
   const {
     conversations,
     isLoading: isLoadingConversations,
     createConversation,
-    isCreating
+    isCreating,
+    deleteConversation,
+    isDeleting
   } = useConversations()
 
   const {
@@ -51,26 +52,21 @@ export function ChatPage({
     conversationId || null
   )
 
-  function handleNewChat() {
+  const currentConversation =
+    conversations.find(
+      conversation =>
+        conversation.id ===
+        conversationId
+    )
+
+  async function handleNewChat() {
     if (isCreating) {
       return
     }
 
-    setIsNewConversationOpen(true)
-  }
-
-  async function handleCreateConversation(
-    title: string,
-    visibility: ConversationVisibility
-  ) {
     try {
       const conversation =
-        await createConversation(
-          title,
-          visibility
-        )
-
-      setIsNewConversationOpen(false)
+        await createConversation()
 
       router.push(
         `/chat/${conversation.id}`
@@ -101,18 +97,36 @@ export function ChatPage({
     }
   }
 
+  async function handleDeleteConversation() {
+    if (
+      !conversationId ||
+      !currentConversation?.isAdmin ||
+      isDeleting
+    ) {
+      return
+    }
+
+    try {
+      await deleteConversation(
+        conversationId
+      )
+
+      setIsDeleteDialogOpen(false)
+
+      router.push('/chat')
+    } catch (error) {
+      console.error(
+        'Failed to delete conversation:',
+        error
+      )
+    }
+  }
+
   const hasConversation =
     Boolean(conversationId)
 
   const isConnected =
     connectionStatus === 'connected'
-
-  const selectedConversation =
-    conversations.find(
-      conversation =>
-        conversation.id ===
-        conversationId
-    )
 
   return (
     <>
@@ -123,7 +137,7 @@ export function ChatPage({
             conversationId || null
           }
           selectedConversation={
-            selectedConversation ?? null
+            currentConversation ?? null
           }
           onNewChat={handleNewChat}
           isCreating={isCreating}
@@ -133,35 +147,64 @@ export function ChatPage({
         />
 
         <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex h-12 shrink-0 items-center justify-end border-b border-border px-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  connectionStatus ===
-                  'connected'
-                    ? 'bg-green-500'
-                    : connectionStatus ===
-                      'error'
-                    ? 'bg-red-500'
-                    : 'bg-yellow-500'
-                }`}
-              />
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+            <div className="min-w-0">
+              {currentConversation && (
+                <h1 className="truncate text-sm font-semibold">
+                  {currentConversation.title ??
+                    'New conversation'}
+                </h1>
+              )}
+            </div>
 
-              <span>
-                {connectionStatus ===
-                'connected'
-                  ? 'Connected'
-                  : connectionStatus ===
-                    'reconnecting'
-                  ? 'Reconnecting...'
-                  : connectionStatus ===
-                    'connecting'
-                  ? 'Connecting...'
-                  : connectionStatus ===
-                    'error'
-                  ? 'Connection error'
-                  : 'Disconnected'}
-              </span>
+            <div className="flex items-center gap-4">
+              {currentConversation?.isAdmin && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setIsDeleteDialogOpen(
+                      true
+                    )
+                  }
+                  disabled={isDeleting}
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 />
+                  Delete
+                </Button>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    connectionStatus ===
+                    'connected'
+                      ? 'bg-green-500'
+                      : connectionStatus ===
+                        'error'
+                        ? 'bg-red-500'
+                        : 'bg-yellow-500'
+                  }`}
+                />
+
+                <span>
+                  {connectionStatus ===
+                    'connected'
+                    ? 'Connected'
+                    : connectionStatus ===
+                      'reconnecting'
+                      ? 'Reconnecting...'
+                      : connectionStatus ===
+                        'connecting'
+                        ? 'Connecting...'
+                        : connectionStatus ===
+                          'error'
+                          ? 'Connection error'
+                          : 'Disconnected'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -188,15 +231,19 @@ export function ChatPage({
         </section>
       </div>
 
-      <NewConversationDialog
-        open={isNewConversationOpen}
-        onClose={() =>
-          setIsNewConversationOpen(false)
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        title="Delete conversation?"
+        description="This will permanently delete the conversation and all of its messages. This action cannot be undone."
+        confirmLabel="Delete conversation"
+        cancelLabel="Cancel"
+        onConfirm={
+          handleDeleteConversation
         }
-        onSubmit={
-          handleCreateConversation
+        onCancel={() =>
+          setIsDeleteDialogOpen(false)
         }
-        isCreating={isCreating}
+        isConfirming={isDeleting}
       />
     </>
   )

@@ -9,6 +9,7 @@ type Conversation {
   visibility: ConversationVisibility!
   createdAt: String!
   updatedAt: String!
+  isAdmin: Boolean!
   messages: [Message!]!
 }
 

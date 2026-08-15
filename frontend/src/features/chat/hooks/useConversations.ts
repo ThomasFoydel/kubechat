@@ -8,6 +8,7 @@ import {
 
 import {
   createConversation,
+  deleteConversation,
   getConversations
 } from '../api/chat.api'
 
@@ -38,7 +39,7 @@ export function useConversations() {
         visibility
       }: {
         title?: string
-        visibility: ConversationVisibility
+        visibility?: ConversationVisibility
       }) =>
         createConversation(
           title,
@@ -64,14 +65,47 @@ export function useConversations() {
       }
     })
 
+  const deleteMutation =
+    useMutation({
+      mutationFn: deleteConversation,
+
+      onSuccess: (_, conversationId) => {
+        queryClient.setQueryData(
+          CONVERSATIONS_QUERY_KEY,
+          (
+            current:
+              | Awaited<
+                ReturnType<
+                  typeof getConversations
+                >
+              >
+              | undefined
+          ) =>
+            (current ?? []).filter(
+              conversation =>
+                conversation.id !==
+                conversationId
+            )
+        )
+      }
+    })
+
   async function handleCreateConversation(
     title?: string,
-    visibility: ConversationVisibility = 'PRIVATE'
+    visibility?: ConversationVisibility
   ) {
     return createMutation.mutateAsync({
       title,
       visibility
     })
+  }
+
+  async function handleDeleteConversation(
+    conversationId: string
+  ) {
+    return deleteMutation.mutateAsync(
+      conversationId
+    )
   }
 
   return {
@@ -88,6 +122,15 @@ export function useConversations() {
       handleCreateConversation,
 
     isCreating:
-      createMutation.isPending
+      createMutation.isPending,
+
+    deleteConversation:
+      handleDeleteConversation,
+
+    isDeleting:
+      deleteMutation.isPending,
+
+    deleteError:
+      deleteMutation.error
   }
 }

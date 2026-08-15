@@ -17,6 +17,7 @@ export type Conversation = {
   __typename?: 'Conversation';
   createdAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  isAdmin: Scalars['Boolean']['output'];
   messages: Array<Message>;
   title?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['String']['output'];
@@ -194,6 +195,7 @@ export type ResolversParentTypes = ResolversObject<{
 export type ConversationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Conversation'] = ResolversParentTypes['Conversation']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

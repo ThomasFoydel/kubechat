@@ -20,8 +20,10 @@ function toConversationResponse(
     id: conversation.id,
     title: conversation.title,
     visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString()
+    createdAt:
+      conversation.createdAt.toISOString(),
+    updatedAt:
+      conversation.updatedAt.toISOString()
   }
 }
 
@@ -40,8 +42,10 @@ async function createConversation(
     id: conversation.id,
     title: conversation.title,
     visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString()
+    createdAt:
+      conversation.createdAt.toISOString(),
+    updatedAt:
+      conversation.updatedAt.toISOString()
   }
 }
 
@@ -49,7 +53,9 @@ async function getConversationById(
   id: string
 ): Promise<ConversationResponse | null> {
   const conversation =
-    await conversationRepository.getConversationById(id)
+    await conversationRepository.getConversationById(
+      id
+    )
 
   return toConversationResponse(conversation)
 }
@@ -62,13 +68,18 @@ async function getUserConversations(
       userId
     )
 
-  return conversations.map((conversation) => ({
-    id: conversation.id,
-    title: conversation.title,
-    visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString()
-  }))
+  return conversations.map(
+    (conversation) => ({
+      id: conversation.id,
+      title: conversation.title,
+      visibility:
+        conversation.visibility,
+      createdAt:
+        conversation.createdAt.toISOString(),
+      updatedAt:
+        conversation.updatedAt.toISOString()
+    })
+  )
 }
 
 async function updateConversation(
@@ -99,8 +110,10 @@ async function updateConversation(
     id: conversation.id,
     title: conversation.title,
     visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString()
+    createdAt:
+      conversation.createdAt.toISOString(),
+    updatedAt:
+      conversation.updatedAt.toISOString()
   }
 }
 
@@ -120,7 +133,9 @@ async function deleteConversation(
     )
   }
 
-  await conversationRepository.deleteConversation(id)
+  await conversationRepository.deleteConversation(
+    id
+  )
 }
 
 async function canAccessConversation(
@@ -128,17 +143,32 @@ async function canAccessConversation(
   userId: string
 ): Promise<boolean> {
   const conversation =
-    await conversationRepository.getConversationById(id)
+    await conversationRepository.getConversationById(
+      id
+    )
 
   if (!conversation) {
     return false
   }
 
-  if (conversation.visibility === 'PUBLIC') {
+  if (
+    conversation.visibility ===
+    'PUBLIC'
+  ) {
     return true
   }
 
   return conversationRepository.isMember(
+    id,
+    userId
+  )
+}
+
+async function isAdmin(
+  id: string,
+  userId: string
+): Promise<boolean> {
+  return conversationRepository.isAdmin(
     id,
     userId
   )
@@ -150,5 +180,6 @@ export const conversationService = {
   getUserConversations,
   updateConversation,
   deleteConversation,
-  canAccessConversation
+  canAccessConversation,
+  isAdmin
 }

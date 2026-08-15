@@ -76,8 +76,10 @@ function getConversationNodesKey(
 }
 
 function getLeaseExpiration(): number {
-  return Date.now() +
+  return (
+    Date.now() +
     nodeLeaseSeconds * 1000
+  )
 }
 
 export async function initializeRedisPubSub(
@@ -176,7 +178,7 @@ export async function getConversationNodes(
     now
   )
 
-  return publisher.zRange(
+  return publisher.zRangeByScore(
     key,
     now,
     '+inf'
