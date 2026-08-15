@@ -7,9 +7,7 @@
     "admissionControllerOptions": {
       "isPodSecurityPolicyEnabled": false
     },
-    "ipFamilies": [
-      "IPv4"
-    ],
+    "ipFamilies": ["IPv4"],
     "kubernetesNetworkConfig": {
       "podsCidr": "10.244.0.0/16",
       "servicesCidr": "10.96.0.0/16"
@@ -33,9 +31,7 @@
           "value": "refs/heads/master"
         }
       ],
-      "signingAlgorithms": [
-        "RS256"
-      ]
+      "signingAlgorithms": ["RS256"]
     },
     "persistentVolumeConfig": {
       "definedTags": {},

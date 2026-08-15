@@ -1,11 +1,6 @@
-export type ConversationVisibility =
-  | 'PUBLIC'
-  | 'PRIVATE'
+export type ConversationVisibility = 'PUBLIC' | 'PRIVATE'
 
-export type ConversationMemberRole =
-  | 'MEMBER'
-  | 'ADMIN'
-  | 'OWNER'
+export type ConversationMemberRole = 'MEMBER' | 'ADMIN' | 'OWNER'
 
 export interface ConversationResponse {
   id: string

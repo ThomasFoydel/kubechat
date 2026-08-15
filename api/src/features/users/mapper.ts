@@ -6,6 +6,6 @@ export function toUserResponse(user: UserModel): UserResponse {
     id: user.id,
     username: user.username,
     email: user.email,
-    createdAt: user.createdAt.toISOString()
+    createdAt: user.createdAt.toISOString(),
   }
 }

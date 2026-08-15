@@ -4,16 +4,15 @@ metadata:
   name: github-actions-deployer
   namespace: default
 rules:
-  - apiGroups: ["apps"]
-    resources: ["deployments"]
-    verbs: ["get", "patch", "update"]
+  - apiGroups: ['apps']
+    resources: ['deployments']
+    verbs: ['get', 'patch', 'update']
 
-  - apiGroups: ["batch"]
-    resources: ["jobs"]
-    verbs: ["get", "create", "delete"]
+  - apiGroups: ['batch']
+    resources: ['jobs']
+    verbs: ['get', 'create', 'delete']
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:

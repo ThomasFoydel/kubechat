@@ -5,17 +5,17 @@ import { AuthRedirect } from './AuthRedirect'
 
 const { mockReplace, mockUseAuth } = vi.hoisted(() => ({
   mockReplace: vi.fn(),
-  mockUseAuth: vi.fn()
+  mockUseAuth: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    replace: mockReplace
-  })
+    replace: mockReplace,
+  }),
 }))
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: mockUseAuth
+  useAuth: mockUseAuth,
 }))
 
 describe('AuthRedirect', () => {
@@ -26,13 +26,13 @@ describe('AuthRedirect', () => {
   it('redirects authenticated users to chat', async () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
-      isLoading: false
+      isLoading: false,
     })
 
     render(
       <AuthRedirect>
         <div>Login page</div>
-      </AuthRedirect>
+      </AuthRedirect>,
     )
 
     await waitFor(() => {
@@ -43,13 +43,13 @@ describe('AuthRedirect', () => {
   it('does not redirect while authentication is loading', () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: false,
-      isLoading: true
+      isLoading: true,
     })
 
     render(
       <AuthRedirect>
         <div>Login page</div>
-      </AuthRedirect>
+      </AuthRedirect>,
     )
 
     expect(mockReplace).not.toHaveBeenCalled()
@@ -58,13 +58,13 @@ describe('AuthRedirect', () => {
   it('does not redirect unauthenticated users', () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: false,
-      isLoading: false
+      isLoading: false,
     })
 
     render(
       <AuthRedirect>
         <div>Login page</div>
-      </AuthRedirect>
+      </AuthRedirect>,
     )
 
     expect(mockReplace).not.toHaveBeenCalled()

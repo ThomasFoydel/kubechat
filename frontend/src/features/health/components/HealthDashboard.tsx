@@ -20,10 +20,7 @@ export function HealthDashboard() {
 
   return (
     <div className="grid gap-4">
-      <HealthCard
-        status={data.status}
-        service={data.service}
-      />
+      <HealthCard status={data.status} service={data.service} />
     </div>
   )
 }

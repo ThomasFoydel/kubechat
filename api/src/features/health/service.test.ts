@@ -1,23 +1,11 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  getReadinessStatus
-} from './service'
-import {
-  isDatabaseHealthy,
-  isRedisHealthy
-} from './repository'
+import { getReadinessStatus } from './service'
+import { isDatabaseHealthy, isRedisHealthy } from './repository'
 
 vi.mock('./repository', () => ({
   isDatabaseHealthy: vi.fn(),
-  isRedisHealthy: vi.fn()
+  isRedisHealthy: vi.fn(),
 }))
 
 describe('getReadinessStatus', () => {
@@ -47,9 +35,7 @@ describe('getReadinessStatus', () => {
   })
 
   it('reports the database as unavailable when the database check fails', async () => {
-    vi.mocked(isDatabaseHealthy).mockRejectedValue(
-      new Error('Database unavailable')
-    )
+    vi.mocked(isDatabaseHealthy).mockRejectedValue(new Error('Database unavailable'))
     vi.mocked(isRedisHealthy).mockResolvedValue(undefined)
 
     const result = await getReadinessStatus()
@@ -61,9 +47,7 @@ describe('getReadinessStatus', () => {
 
   it('reports Redis as unavailable when the Redis check fails', async () => {
     vi.mocked(isDatabaseHealthy).mockResolvedValue(undefined)
-    vi.mocked(isRedisHealthy).mockRejectedValue(
-      new Error('Redis unavailable')
-    )
+    vi.mocked(isRedisHealthy).mockRejectedValue(new Error('Redis unavailable'))
 
     const result = await getReadinessStatus()
 
@@ -73,12 +57,8 @@ describe('getReadinessStatus', () => {
   })
 
   it('reports both dependencies as unavailable when both checks fail', async () => {
-    vi.mocked(isDatabaseHealthy).mockRejectedValue(
-      new Error('Database unavailable')
-    )
-    vi.mocked(isRedisHealthy).mockRejectedValue(
-      new Error('Redis unavailable')
-    )
+    vi.mocked(isDatabaseHealthy).mockRejectedValue(new Error('Database unavailable'))
+    vi.mocked(isRedisHealthy).mockRejectedValue(new Error('Redis unavailable'))
 
     const result = await getReadinessStatus()
 

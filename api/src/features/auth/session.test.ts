@@ -4,19 +4,15 @@ const { redisMock } = vi.hoisted(() => ({
   redisMock: {
     set: vi.fn(),
     get: vi.fn(),
-    del: vi.fn()
-  }
+    del: vi.fn(),
+  },
 }))
 
 vi.mock('../../db/redis', () => ({
-  redis: redisMock
+  redis: redisMock,
 }))
 
-import {
-  createSession,
-  getUserIdFromSession,
-  deleteSession
-} from './session'
+import { createSession, getUserIdFromSession, deleteSession } from './session'
 
 describe('createSession', () => {
   beforeEach(() => {
@@ -30,13 +26,9 @@ describe('createSession', () => {
 
     expect(sessionId).toMatch(/^[a-f0-9]{64}$/)
 
-    expect(redisMock.set).toHaveBeenCalledWith(
-      `session:${sessionId}`,
-      'user-123',
-      {
-        EX: 60 * 60 * 24 * 7
-      }
-    )
+    expect(redisMock.set).toHaveBeenCalledWith(`session:${sessionId}`, 'user-123', {
+      EX: 60 * 60 * 24 * 7,
+    })
   })
 })
 
@@ -50,9 +42,7 @@ describe('getUserIdFromSession', () => {
 
     const result = await getUserIdFromSession('session-123')
 
-    expect(redisMock.get).toHaveBeenCalledWith(
-      'session:session-123'
-    )
+    expect(redisMock.get).toHaveBeenCalledWith('session:session-123')
 
     expect(result).toBe('user-123')
   })
@@ -62,9 +52,7 @@ describe('getUserIdFromSession', () => {
 
     const result = await getUserIdFromSession('invalid-session')
 
-    expect(redisMock.get).toHaveBeenCalledWith(
-      'session:invalid-session'
-    )
+    expect(redisMock.get).toHaveBeenCalledWith('session:invalid-session')
 
     expect(result).toBeNull()
   })
@@ -80,8 +68,6 @@ describe('deleteSession', () => {
 
     await deleteSession('session-123')
 
-    expect(redisMock.del).toHaveBeenCalledWith(
-      'session:session-123'
-    )
+    expect(redisMock.del).toHaveBeenCalledWith('session:session-123')
   })
 })

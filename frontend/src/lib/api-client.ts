@@ -1,6 +1,4 @@
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  'https://kubechat.duckdns.org'
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://kubechat.duckdns.org'
 
 export interface ApiValidationError {
   field: string
@@ -16,11 +14,7 @@ export class ApiError extends Error {
   public readonly status: number
   public readonly errors: ApiValidationError[]
 
-  constructor(
-    status: number,
-    message: string,
-    errors: ApiValidationError[] = []
-  ) {
+  constructor(status: number, message: string, errors: ApiValidationError[] = []) {
     super(message)
     this.name = 'ApiError'
     this.status = status
@@ -28,9 +22,7 @@ export class ApiError extends Error {
   }
 }
 
-async function parseErrorResponse(
-  response: Response
-): Promise<ApiErrorResponse> {
+async function parseErrorResponse(response: Response): Promise<ApiErrorResponse> {
   const text = await response.text()
 
   if (!text) {
@@ -44,30 +36,23 @@ async function parseErrorResponse(
   }
 }
 
-export async function apiClient<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const response = await fetch(
-    `${API_URL}${path}`,
-    {
-      ...options,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    }
-  )
+export async function apiClient<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
 
   if (!response.ok) {
     const body = await parseErrorResponse(response)
 
     throw new ApiError(
       response.status,
-      body.message ??
-        `API error: ${response.status}`,
-      body.errors ?? []
+      body.message ?? `API error: ${response.status}`,
+      body.errors ?? [],
     )
   }
 

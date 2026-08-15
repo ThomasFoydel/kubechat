@@ -9,9 +9,7 @@ interface RequireAuthProps {
   children: React.ReactNode
 }
 
-export function RequireAuth({
-  children
-}: RequireAuthProps) {
+export function RequireAuth({ children }: RequireAuthProps) {
   const router = useRouter()
   const { isLoading, isAuthenticated } = useAuth()
 
@@ -19,11 +17,7 @@ export function RequireAuth({
     if (!isLoading && !isAuthenticated) {
       router.replace('/login')
     }
-  }, [
-    isLoading,
-    isAuthenticated,
-    router
-  ])
+  }, [isLoading, isAuthenticated, router])
 
   if (isLoading || !isAuthenticated) {
     return null

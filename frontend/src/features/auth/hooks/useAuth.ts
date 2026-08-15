@@ -1,23 +1,15 @@
 'use client'
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   getCurrentUser,
   login as loginUser,
   logout as logoutUser,
-  register as registerUser
+  register as registerUser,
 } from '../api/auth.api'
 
-import type {
-  LoginRequest,
-  RegisterRequest,
-  User
-} from '../types/auth.types'
+import type { LoginRequest, RegisterRequest, User } from '../types/auth.types'
 
 const CURRENT_USER_QUERY_KEY = ['auth', 'current-user']
 
@@ -29,39 +21,28 @@ export function useAuth() {
     queryFn: getCurrentUser,
     retry: false,
     staleTime: 60_000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   })
 
   const loginMutation = useMutation({
-    mutationFn: (data: LoginRequest) =>
-      loginUser(data),
-    onSuccess: user => {
-      queryClient.setQueryData(
-        CURRENT_USER_QUERY_KEY,
-        user
-      )
-    }
+    mutationFn: (data: LoginRequest) => loginUser(data),
+    onSuccess: (user) => {
+      queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
+    },
   })
 
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterRequest) =>
-      registerUser(data),
-    onSuccess: user => {
-      queryClient.setQueryData(
-        CURRENT_USER_QUERY_KEY,
-        user
-      )
-    }
+    mutationFn: (data: RegisterRequest) => registerUser(data),
+    onSuccess: (user) => {
+      queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user)
+    },
   })
 
   const logoutMutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
-      queryClient.setQueryData(
-        CURRENT_USER_QUERY_KEY,
-        null
-      )
-    }
+      queryClient.setQueryData(CURRENT_USER_QUERY_KEY, null)
+    },
   })
 
   return {
@@ -87,6 +68,6 @@ export function useAuth() {
 
     registerError: registerMutation.error,
 
-    logoutError: logoutMutation.error
+    logoutError: logoutMutation.error,
   }
 }

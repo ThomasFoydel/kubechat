@@ -6,14 +6,8 @@ interface ChatRouteProps {
   }>
 }
 
-export default async function ChatRoute({
-  params
-}: ChatRouteProps) {
+export default async function ChatRoute({ params }: ChatRouteProps) {
   const { conversationId } = await params
 
-  return (
-    <ChatPage
-      conversationId={conversationId}
-    />
-  )
+  return <ChatPage conversationId={conversationId} />
 }

@@ -6,8 +6,8 @@ import { userService } from './service'
 
 vi.mock('./service', () => ({
   userService: {
-    getUserById: vi.fn()
-  }
+    getUserById: vi.fn(),
+  },
 }))
 
 describe('getUserById', () => {
@@ -18,14 +18,14 @@ describe('getUserById', () => {
 
     const req = {
       params: {
-        id: user.id
-      }
+        id: user.id,
+      },
     } as Request<{ id: string }>
 
     const json = vi.fn()
 
     const res = {
-      json
+      json,
     } as unknown as Response
 
     await getUserById(req, res)
@@ -39,15 +39,15 @@ describe('getUserById', () => {
 
     const req = {
       params: {
-        id: 'missing-user'
-      }
+        id: 'missing-user',
+      },
     } as Request<{ id: string }>
 
     const json = vi.fn()
     const status = vi.fn().mockReturnValue({ json })
 
     const res = {
-      status
+      status,
     } as unknown as Response
 
     await getUserById(req, res)
@@ -55,7 +55,7 @@ describe('getUserById', () => {
     expect(userService.getUserById).toHaveBeenCalledWith('missing-user')
     expect(status).toHaveBeenCalledWith(404)
     expect(json).toHaveBeenCalledWith({
-      message: 'User not found'
+      message: 'User not found',
     })
   })
 })

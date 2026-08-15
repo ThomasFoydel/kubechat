@@ -69,17 +69,17 @@ Feature-based organization also provides a natural boundary for future developme
 
 ### Positive
 
-* Related code is colocated.
-* Business boundaries are visible in the filesystem.
-* Features can evolve independently.
-* Large technical directories are avoided.
-* New developers can locate functionality based on what the application does rather than how the code is implemented.
+- Related code is colocated.
+- Business boundaries are visible in the filesystem.
+- Features can evolve independently.
+- Large technical directories are avoided.
+- New developers can locate functionality based on what the application does rather than how the code is implemented.
 
 ### Negative
 
-* Some common functionality may need explicit shared modules.
-* Developers must avoid creating unnecessary cross-feature dependencies.
-* Small features can contain several files even when their implementation is simple.
+- Some common functionality may need explicit shared modules.
+- Developers must avoid creating unnecessary cross-feature dependencies.
+- Small features can contain several files even when their implementation is simple.
 
 ## Dependency Direction
 

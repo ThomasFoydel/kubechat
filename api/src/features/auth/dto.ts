@@ -16,20 +16,15 @@ export const registerSchema = z.object({
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be at most 128 characters')
+    .max(128, 'Password must be at most 128 characters'),
 })
 
 export type RegisterRequest = z.infer<typeof registerSchema>
 
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email('Invalid email address'),
+  email: z.string().trim().email('Invalid email address'),
 
-  password: z
-    .string()
-    .min(1, 'Password is required')
+  password: z.string().min(1, 'Password is required'),
 })
 
 export type LoginRequest = z.infer<typeof loginSchema>

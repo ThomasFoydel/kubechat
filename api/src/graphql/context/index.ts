@@ -7,21 +7,18 @@ export interface GraphQLContext {
   userId: string | null
 }
 
-export async function createGraphQLContext(
-  req: Request
-): Promise<GraphQLContext> {
+export async function createGraphQLContext(req: Request): Promise<GraphQLContext> {
   const sessionId = getSessionCookie(req)
 
   if (!sessionId) {
     return {
-      userId: null
+      userId: null,
     }
   }
 
-  const userId =
-    await getUserIdFromSession(sessionId)
+  const userId = await getUserIdFromSession(sessionId)
 
   return {
-    userId
+    userId,
   }
 }

@@ -1,10 +1,4 @@
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => {
   const createClient = vi.fn()
@@ -18,7 +12,7 @@ const mocks = vi.hoisted(() => {
     zRem: vi.fn(),
     zRemRangeByScore: vi.fn(),
     zRangeByScore: vi.fn(),
-    quit: vi.fn()
+    quit: vi.fn(),
   }
 
   const subscriber = {
@@ -26,36 +20,30 @@ const mocks = vi.hoisted(() => {
     connect: vi.fn(),
     on: vi.fn(),
     subscribe: vi.fn(),
-    quit: vi.fn()
+    quit: vi.fn(),
   }
 
-  createClient
-    .mockReturnValueOnce(publisher)
-    .mockReturnValueOnce(subscriber)
+  createClient.mockReturnValueOnce(publisher).mockReturnValueOnce(subscriber)
 
   return {
     createClient,
     publisher,
-    subscriber
+    subscriber,
   }
 })
 
 vi.hoisted(() => {
-  process.env.DATABASE_URL =
-    'postgresql://test:test@localhost:5432/test'
+  process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
 
-  process.env.REDIS_URL =
-    'redis://localhost:6379'
+  process.env.REDIS_URL = 'redis://localhost:6379'
 
-  process.env.SESSION_SECRET =
-    'test-session-secret'
+  process.env.SESSION_SECRET = 'test-session-secret'
 
-  process.env.WEBSOCKET_NODE_ID =
-    'test-node-1'
+  process.env.WEBSOCKET_NODE_ID = 'test-node-1'
 })
 
 vi.mock('redis', () => ({
-  createClient: mocks.createClient
+  createClient: mocks.createClient,
 }))
 
 import {
@@ -65,7 +53,7 @@ import {
   publishMessageCreated,
   refreshConversationNodeLease,
   registerConversationNode,
-  unregisterConversationNode
+  unregisterConversationNode,
 } from './redisPubSub'
 
 describe('redisPubSub', () => {
@@ -75,236 +63,154 @@ describe('redisPubSub', () => {
     mocks.publisher.isOpen = false
     mocks.subscriber.isOpen = false
 
-    mocks.publisher.zRangeByScore.mockResolvedValue(
-      []
-    )
+    mocks.publisher.zRangeByScore.mockResolvedValue([])
 
-    mocks.publisher.zRemRangeByScore.mockResolvedValue(
-      0
-    )
+    mocks.publisher.zRemRangeByScore.mockResolvedValue(0)
 
     mocks.publisher.zAdd.mockResolvedValue(1)
     mocks.publisher.zRem.mockResolvedValue(1)
     mocks.publisher.publish.mockResolvedValue(1)
-    mocks.publisher.connect.mockResolvedValue(
-      undefined
-    )
-    mocks.publisher.quit.mockResolvedValue(
-      undefined
-    )
+    mocks.publisher.connect.mockResolvedValue(undefined)
+    mocks.publisher.quit.mockResolvedValue(undefined)
 
-    mocks.subscriber.connect.mockResolvedValue(
-      undefined
-    )
+    mocks.subscriber.connect.mockResolvedValue(undefined)
 
-    mocks.subscriber.quit.mockResolvedValue(
-      undefined
-    )
+    mocks.subscriber.quit.mockResolvedValue(undefined)
 
-    mocks.subscriber.subscribe.mockResolvedValue(
-      undefined
-    )
+    mocks.subscriber.subscribe.mockResolvedValue(undefined)
   })
 
   describe('initializeRedisPubSub', () => {
     it('connects publisher and subscriber and subscribes to the node channel', async () => {
       await initializeRedisPubSub(vi.fn())
 
-      expect(
-        mocks.publisher.connect
-      ).toHaveBeenCalledTimes(1)
+      expect(mocks.publisher.connect).toHaveBeenCalledTimes(1)
 
-      expect(
-        mocks.subscriber.connect
-      ).toHaveBeenCalledTimes(1)
+      expect(mocks.subscriber.connect).toHaveBeenCalledTimes(1)
 
-      expect(
-        mocks.subscriber.subscribe
-      ).toHaveBeenCalledWith(
+      expect(mocks.subscriber.subscribe).toHaveBeenCalledWith(
         'kubechat:websocket:node:test-node-1',
-        expect.any(Function)
+        expect.any(Function),
       )
     })
   })
 
   describe('conversation node registration', () => {
     it('registers the current node for a conversation', async () => {
-      await registerConversationNode(
-        'conversation-123'
-      )
+      await registerConversationNode('conversation-123')
 
-      expect(
-        mocks.publisher.zAdd
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.zAdd).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
         {
           score: expect.any(Number),
-          value: 'test-node-1'
-        }
+          value: 'test-node-1',
+        },
       )
     })
 
     it('refreshes the current node lease', async () => {
-      await refreshConversationNodeLease(
-        'conversation-123'
-      )
+      await refreshConversationNodeLease('conversation-123')
 
-      expect(
-        mocks.publisher.zAdd
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.zAdd).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
         {
           score: expect.any(Number),
-          value: 'test-node-1'
-        }
+          value: 'test-node-1',
+        },
       )
     })
 
     it('unregisters the current node for a conversation', async () => {
-      await unregisterConversationNode(
-        'conversation-123'
-      )
+      await unregisterConversationNode('conversation-123')
 
-      expect(
-        mocks.publisher.zRem
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.zRem).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
-        'test-node-1'
+        'test-node-1',
       )
     })
   })
 
   describe('getConversationNodes', () => {
     it('removes expired nodes before returning active nodes', async () => {
-      mocks.publisher.zRangeByScore.mockResolvedValue(
-        [
-          'node-1',
-          'node-2'
-        ]
-      )
+      mocks.publisher.zRangeByScore.mockResolvedValue(['node-1', 'node-2'])
 
-      const result =
-        await getConversationNodes(
-          'conversation-123'
-        )
+      const result = await getConversationNodes('conversation-123')
 
-      expect(
-        mocks.publisher.zRemRangeByScore
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.zRemRangeByScore).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
         0,
-        expect.any(Number)
+        expect.any(Number),
       )
 
-      expect(
-        mocks.publisher.zRangeByScore
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.zRangeByScore).toHaveBeenCalledWith(
         'kubechat:websocket:conversation:conversation-123:nodes',
         expect.any(Number),
-        '+inf'
+        '+inf',
       )
 
-      expect(result).toEqual([
-        'node-1',
-        'node-2'
-      ])
+      expect(result).toEqual(['node-1', 'node-2'])
     })
   })
 
   describe('publishMessageCreated', () => {
     it('publishes the event only to nodes subscribed to the conversation', async () => {
-      mocks.publisher.zRangeByScore.mockResolvedValue(
-        [
-          'node-1',
-          'node-2'
-        ]
-      )
+      mocks.publisher.zRangeByScore.mockResolvedValue(['node-1', 'node-2'])
 
       const message = {
         id: 'message-123',
-        conversationId:
-          'conversation-123',
+        conversationId: 'conversation-123',
         userId: 'user-123',
         content: 'Hello',
-        createdAt:
-          '2026-08-14T00:00:00.000Z'
+        createdAt: '2026-08-14T00:00:00.000Z',
       }
 
-      await publishMessageCreated(
-        'conversation-123',
-        message
-      )
+      await publishMessageCreated('conversation-123', message)
 
-      expect(
-        mocks.publisher.publish
-      ).toHaveBeenCalledTimes(2)
+      expect(mocks.publisher.publish).toHaveBeenCalledTimes(2)
 
-      expect(
-        mocks.publisher.publish
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.publish).toHaveBeenCalledWith(
         'kubechat:websocket:node:node-1',
-        expect.any(String)
+        expect.any(String),
       )
 
-      expect(
-        mocks.publisher.publish
-      ).toHaveBeenCalledWith(
+      expect(mocks.publisher.publish).toHaveBeenCalledWith(
         'kubechat:websocket:node:node-2',
-        expect.any(String)
+        expect.any(String),
       )
     })
 
     it('does not publish when no nodes are subscribed', async () => {
-      mocks.publisher.zRangeByScore.mockResolvedValue(
-        []
-      )
+      mocks.publisher.zRangeByScore.mockResolvedValue([])
 
       const message = {
         id: 'message-123',
-        conversationId:
-          'conversation-123',
+        conversationId: 'conversation-123',
         userId: 'user-123',
         content: 'Hello',
-        createdAt:
-          '2026-08-14T00:00:00.000Z'
+        createdAt: '2026-08-14T00:00:00.000Z',
       }
 
-      await publishMessageCreated(
-        'conversation-123',
-        message
-      )
+      await publishMessageCreated('conversation-123', message)
 
-      expect(
-        mocks.publisher.publish
-      ).not.toHaveBeenCalled()
+      expect(mocks.publisher.publish).not.toHaveBeenCalled()
     })
 
     it('publishes a structured message.created event', async () => {
-      mocks.publisher.zRangeByScore.mockResolvedValue(
-        ['node-1']
-      )
+      mocks.publisher.zRangeByScore.mockResolvedValue(['node-1'])
 
       const message = {
         id: 'message-123',
-        conversationId:
-          'conversation-123',
+        conversationId: 'conversation-123',
         userId: 'user-123',
         content: 'Hello',
-        createdAt:
-          '2026-08-14T00:00:00.000Z'
+        createdAt: '2026-08-14T00:00:00.000Z',
       }
 
-      await publishMessageCreated(
-        'conversation-123',
-        message,
-        'client-message-123'
-      )
+      await publishMessageCreated('conversation-123', message, 'client-message-123')
 
-      const [, serializedEvent] =
-        mocks.publisher.publish.mock.calls[0]
+      const [, serializedEvent] = mocks.publisher.publish.mock.calls[0]
 
-      const event =
-        JSON.parse(serializedEvent)
+      const event = JSON.parse(serializedEvent)
 
       expect(event).toEqual({
         eventId: expect.any(String),
@@ -312,12 +218,10 @@ describe('redisPubSub', () => {
         version: 1,
         occurredAt: expect.any(String),
         payload: {
-          conversationId:
-            'conversation-123',
+          conversationId: 'conversation-123',
           message,
-          clientMessageId:
-            'client-message-123'
-        }
+          clientMessageId: 'client-message-123',
+        },
       })
     })
   })
@@ -329,13 +233,9 @@ describe('redisPubSub', () => {
 
       await disconnectRedisPubSub()
 
-      expect(
-        mocks.subscriber.quit
-      ).toHaveBeenCalledTimes(1)
+      expect(mocks.subscriber.quit).toHaveBeenCalledTimes(1)
 
-      expect(
-        mocks.publisher.quit
-      ).toHaveBeenCalledTimes(1)
+      expect(mocks.publisher.quit).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -6,32 +6,20 @@ import { MessageSquare } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 
 export function LoginForm() {
-  const {
-    login,
-    isLoggingIn,
-    loginError
-  } = useAuth()
+  const { login, isLoggingIn, loginError } = useAuth()
 
-  async function handleSubmit(
-    event: React.SubmitEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const formData = new FormData(
-      event.currentTarget
-    )
+    const formData = new FormData(event.currentTarget)
 
-    const email = String(
-      formData.get('email')
-    )
+    const email = String(formData.get('email'))
 
-    const password = String(
-      formData.get('password')
-    )
+    const password = String(formData.get('password'))
 
     await login({
       email,
-      password
+      password,
     })
   }
 
@@ -39,31 +27,18 @@ export function LoginForm() {
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl border border-border bg-card shadow-lg shadow-black/20">
-          <MessageSquare
-            size={24}
-            className="text-primary"
-          />
+          <MessageSquare size={24} className="text-primary" />
         </div>
 
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome back
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
 
-        <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to continue to KubeChat
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Sign in to continue to KubeChat</p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6 shadow-xl shadow-black/20">
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium"
-            >
+            <label htmlFor="email" className="text-sm font-medium">
               Email
             </label>
 
@@ -78,10 +53,7 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium"
-            >
+            <label htmlFor="password" className="text-sm font-medium">
               Password
             </label>
 
@@ -109,9 +81,7 @@ export function LoginForm() {
             disabled={isLoggingIn}
             className="h-10 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoggingIn
-              ? 'Signing in...'
-              : 'Sign in'}
+            {isLoggingIn ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>

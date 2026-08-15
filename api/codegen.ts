@@ -4,10 +4,7 @@ const config: CodegenConfig = {
   schema: 'src/graphql/features/**/*.graphql',
   generates: {
     'src/graphql/generated/types.ts': {
-      plugins: [
-        'typescript',
-        'typescript-resolvers'
-      ],
+      plugins: ['typescript', 'typescript-resolvers'],
       config: {
         contextType: '../context#GraphQLContext',
         useIndexSignature: true,
@@ -15,12 +12,11 @@ const config: CodegenConfig = {
         inputMaybeValue: 'T | null | undefined',
 
         mappers: {
-          Conversation:
-            '../../features/conversations/dto#ConversationResponse'
-        }
-      }
-    }
-  }
+          Conversation: '../../features/conversations/dto#ConversationResponse',
+        },
+      },
+    },
+  },
 }
 
 export default config

@@ -4,7 +4,7 @@ import { prisma } from '../../db/prisma'
 async function createConversation(
   userId: string,
   title?: string,
-  visibility: 'PUBLIC' | 'PRIVATE' = 'PRIVATE'
+  visibility: 'PUBLIC' | 'PRIVATE' = 'PRIVATE',
 ): Promise<Conversation> {
   return prisma.conversation.create({
     data: {
@@ -13,102 +13,83 @@ async function createConversation(
       members: {
         create: {
           userId,
-          role: 'OWNER'
-        }
-      }
-    }
+          role: 'OWNER',
+        },
+      },
+    },
   })
 }
 
-async function getConversationById(
-  id: string
-): Promise<Conversation | null> {
+async function getConversationById(id: string): Promise<Conversation | null> {
   return prisma.conversation.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   })
 }
 
-async function getConversationsByUserId(
-  userId: string
-): Promise<Conversation[]> {
+async function getConversationsByUserId(userId: string): Promise<Conversation[]> {
   return prisma.conversation.findMany({
     where: {
       members: {
         some: {
-          userId
-        }
-      }
+          userId,
+        },
+      },
     },
     orderBy: {
-      updatedAt: 'desc'
-    }
+      updatedAt: 'desc',
+    },
   })
 }
 
-async function isMember(
-  conversationId: string,
-  userId: string
-): Promise<boolean> {
-  const membership =
-    await prisma.conversationMember.findUnique({
-      where: {
-        conversationId_userId: {
-          conversationId,
-          userId
-        }
-      }
-    })
+async function isMember(conversationId: string, userId: string): Promise<boolean> {
+  const membership = await prisma.conversationMember.findUnique({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
+      },
+    },
+  })
 
   return membership !== null
 }
 
-async function isAdmin(
-  conversationId: string,
-  userId: string
-): Promise<boolean> {
-  const membership =
-    await prisma.conversationMember.findUnique({
-      where: {
-        conversationId_userId: {
-          conversationId,
-          userId
-        }
-      }
-    })
+async function isAdmin(conversationId: string, userId: string): Promise<boolean> {
+  const membership = await prisma.conversationMember.findUnique({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
+      },
+    },
+  })
 
-  return (
-    membership?.role === 'OWNER' ||
-    membership?.role === 'ADMIN'
-  )
+  return membership?.role === 'OWNER' || membership?.role === 'ADMIN'
 }
 
 async function updateConversation(
   id: string,
   title: string | null,
-  visibility?: 'PUBLIC' | 'PRIVATE'
+  visibility?: 'PUBLIC' | 'PRIVATE',
 ): Promise<Conversation> {
   return prisma.conversation.update({
     where: {
-      id
+      id,
     },
     data: {
       title,
-      ...(visibility !== undefined
-        ? { visibility }
-        : {})
-    }
+      ...(visibility !== undefined ? { visibility } : {}),
+    },
   })
 }
 
-async function deleteConversation(
-  id: string
-): Promise<void> {
+async function deleteConversation(id: string): Promise<void> {
   await prisma.conversation.delete({
     where: {
-      id
-    }
+      id,
+    },
   })
 }
 
@@ -119,5 +100,5 @@ export const conversationRepository = {
   isMember,
   isAdmin,
   updateConversation,
-  deleteConversation
+  deleteConversation,
 }

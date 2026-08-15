@@ -1,53 +1,36 @@
 'use client'
 
-import {
-  Activity,
-  LayoutDashboard,
-  LogOut,
-  MessageSquare,
-  Plus,
-  Users,
-  X
-} from 'lucide-react'
+import { Activity, LayoutDashboard, LogOut, MessageSquare, Plus, Users, X } from 'lucide-react'
 import Link from 'next/link'
-import {
-  usePathname,
-  useRouter
-} from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { useAuth } from '@/features/auth'
-import {
-  NewConversationDialog
-} from '@/features/chat/components/NewConversationDialog'
-import {
-  useConversations
-} from '@/features/chat/hooks/useConversations'
-import type {
-  ConversationVisibility
-} from '@/features/chat/types/conversation.types'
+import { NewConversationDialog } from '@/features/chat/components/NewConversationDialog'
+import { useConversations } from '@/features/chat/hooks/useConversations'
+import type { ConversationVisibility } from '@/features/chat/types/conversation.types'
 
 const navigation = [
   {
     name: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard
+    icon: LayoutDashboard,
   },
   {
     name: 'Health',
     href: '/health',
-    icon: Activity
+    icon: Activity,
   },
   {
     name: 'Messages',
     href: '/messages',
-    icon: MessageSquare
+    icon: MessageSquare,
   },
   {
     name: 'Users',
     href: '/users',
-    icon: Users
-  }
+    icon: Users,
+  },
 ]
 
 interface SidebarProps {
@@ -55,40 +38,21 @@ interface SidebarProps {
   onClose: () => void
 }
 
-export function Sidebar({
-  open,
-  onClose
-}: SidebarProps) {
+export function Sidebar({ open, onClose }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const [
-    isNewConversationOpen,
-    setIsNewConversationOpen
-  ] = useState(false)
+  const [isNewConversationOpen, setIsNewConversationOpen] = useState(false)
 
-  const {
-    logout,
-    isLoggingOut
-  } = useAuth()
+  const { logout, isLoggingOut } = useAuth()
 
-  const {
-    conversations,
-    createConversation,
-    isCreating
-  } = useConversations()
+  const { conversations, createConversation, isCreating } = useConversations()
 
-  const currentConversationId =
-    pathname.startsWith('/chat/')
-      ? pathname.split('/')[2]
-      : null
+  const currentConversationId = pathname.startsWith('/chat/') ? pathname.split('/')[2] : null
 
-  const currentConversation =
-    conversations.find(
-      conversation =>
-        conversation.id ===
-        currentConversationId
-    )
+  const currentConversation = conversations.find(
+    (conversation) => conversation.id === currentConversationId,
+  )
 
   async function handleLogout() {
     await logout()
@@ -103,39 +67,23 @@ export function Sidebar({
     setIsNewConversationOpen(true)
   }
 
-  async function handleCreateConversation(
-    title: string,
-    visibility: ConversationVisibility
-  ) {
+  async function handleCreateConversation(title: string, visibility: ConversationVisibility) {
     try {
-      const conversation =
-        await createConversation(
-          title,
-          visibility
-        )
+      const conversation = await createConversation(title, visibility)
 
       setIsNewConversationOpen(false)
       onClose()
 
-      router.push(
-        `/chat/${conversation.id}`
-      )
+      router.push(`/chat/${conversation.id}`)
     } catch (error) {
-      console.error(
-        'Failed to create conversation:',
-        error
-      )
+      console.error('Failed to create conversation:', error)
     }
   }
 
-  function handleConversationSelect(
-    conversationId: string
-  ) {
+  function handleConversationSelect(conversationId: string) {
     onClose()
 
-    router.push(
-      `/chat/${conversationId}`
-    )
+    router.push(`/chat/${conversationId}`)
   }
 
   return (
@@ -159,9 +107,7 @@ export function Sidebar({
         `}
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
-          <h2 className="text-lg font-semibold">
-            KubeChat
-          </h2>
+          <h2 className="text-lg font-semibold">KubeChat</h2>
 
           <button
             type="button"
@@ -175,7 +121,7 @@ export function Sidebar({
 
         <div className="flex-1 overflow-y-auto">
           <nav className="space-y-1 p-4">
-            {navigation.map(item => {
+            {navigation.map((item) => {
               const Icon = item.icon
 
               return (
@@ -200,8 +146,7 @@ export function Sidebar({
                 </p>
 
                 <p className="mt-1 truncate px-2 text-sm font-medium">
-                  {currentConversation?.title ??
-                    'No conversation selected'}
+                  {currentConversation?.title ?? 'No conversation selected'}
                 </p>
               </div>
 
@@ -217,40 +162,24 @@ export function Sidebar({
             </div>
 
             <div className="space-y-1">
-              {conversations.map(
-                conversation => (
-                  <button
-                    key={conversation.id}
-                    type="button"
-                    onClick={() =>
-                      handleConversationSelect(
-                        conversation.id
-                      )
-                    }
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${currentConversationId ===
-                        conversation.id
-                        ? 'bg-muted'
-                        : 'hover:bg-muted/50'
-                      }`}
-                  >
-                    <MessageSquare
-                      size={17}
-                    />
+              {conversations.map((conversation) => (
+                <button
+                  key={conversation.id}
+                  type="button"
+                  onClick={() => handleConversationSelect(conversation.id)}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                    currentConversationId === conversation.id ? 'bg-muted' : 'hover:bg-muted/50'
+                  }`}
+                >
+                  <MessageSquare size={17} />
 
-                    <span className="truncate">
-                      {conversation.title ??
-                        'New conversation'}
-                    </span>
-                  </button>
-                )
+                  <span className="truncate">{conversation.title ?? 'New conversation'}</span>
+                </button>
+              ))}
+
+              {conversations.length === 0 && (
+                <p className="px-2 py-2 text-xs text-muted-foreground">No conversations yet.</p>
               )}
-
-              {conversations.length ===
-                0 && (
-                  <p className="px-2 py-2 text-xs text-muted-foreground">
-                    No conversations yet.
-                  </p>
-                )}
             </div>
           </div>
         </div>
@@ -264,21 +193,15 @@ export function Sidebar({
           >
             <LogOut className="h-4 w-4" />
 
-            {isLoggingOut
-              ? 'Signing out...'
-              : 'Sign out'}
+            {isLoggingOut ? 'Signing out...' : 'Sign out'}
           </button>
         </div>
       </aside>
 
       <NewConversationDialog
         open={isNewConversationOpen}
-        onClose={() =>
-          setIsNewConversationOpen(false)
-        }
-        onSubmit={
-          handleCreateConversation
-        }
+        onClose={() => setIsNewConversationOpen(false)}
+        onSubmit={handleCreateConversation}
         isCreating={isCreating}
       />
     </>

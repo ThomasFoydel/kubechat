@@ -41,12 +41,12 @@ This keeps related behavior together and allows individual features to evolve wi
 
 The application still separates responsibilities within each feature:
 
-* **Routes** define HTTP endpoints.
-* **Controllers** translate HTTP requests into application operations and HTTP responses.
-* **Services** contain application and business logic.
-* **Repositories** handle persistence.
-* **DTOs** define API input and output contracts.
-* **Mappers** translate persistence models into API responses.
+- **Routes** define HTTP endpoints.
+- **Controllers** translate HTTP requests into application operations and HTTP responses.
+- **Services** contain application and business logic.
+- **Repositories** handle persistence.
+- **DTOs** define API input and output contracts.
+- **Mappers** translate persistence models into API responses.
 
 For example, the authentication feature contains authentication-specific concerns:
 

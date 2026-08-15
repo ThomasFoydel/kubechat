@@ -9,29 +9,17 @@ interface AppShellProps {
   children: ReactNode
 }
 
-export function AppShell({
-  children
-}: AppShellProps) {
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false)
+export function AppShell({ children }: AppShellProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopNav
-          onOpenSidebar={() =>
-            setSidebarOpen(true)
-          }
-        />
+        <TopNav onOpenSidebar={() => setSidebarOpen(true)} />
 
-        <main className="min-h-0 flex-1">
-          {children}
-        </main>
+        <main className="min-h-0 flex-1">{children}</main>
       </div>
     </div>
   )
