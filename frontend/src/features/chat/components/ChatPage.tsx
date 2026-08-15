@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button'
 
 import { useChat } from '../hooks/useChat'
 import { useConversations } from '../hooks/useConversations'
+import type { ConversationVisibility } from '../types/conversation.types'
 
 import { ChatSidebar } from './ChatSidebar'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { EmptyChat } from './EmptyChat'
 import { MessageComposer } from './MessageComposer'
 import { MessageList } from './MessageList'
+import { NewConversationDialog } from './NewConversationDialog'
 
 interface ChatPageProps {
   conversationId?: string
@@ -28,6 +30,11 @@ export function ChatPage({
 
   const [message, setMessage] =
     useState('')
+
+  const [
+    isNewConversationDialogOpen,
+    setIsNewConversationDialogOpen
+  ] = useState(false)
 
   const [
     isDeleteDialogOpen,
@@ -59,14 +66,30 @@ export function ChatPage({
         conversationId
     )
 
-  async function handleNewChat() {
+  function handleNewChat() {
     if (isCreating) {
       return
     }
 
+    setIsNewConversationDialogOpen(
+      true
+    )
+  }
+
+  async function handleCreateConversation(
+    title: string,
+    visibility: ConversationVisibility
+  ) {
     try {
       const conversation =
-        await createConversation()
+        await createConversation(
+          title,
+          visibility
+        )
+
+      setIsNewConversationDialogOpen(
+        false
+      )
 
       router.push(
         `/chat/${conversation.id}`
@@ -230,6 +253,21 @@ export function ChatPage({
           />
         </section>
       </div>
+
+      <NewConversationDialog
+        open={
+          isNewConversationDialogOpen
+        }
+        onClose={() =>
+          setIsNewConversationDialogOpen(
+            false
+          )
+        }
+        onSubmit={
+          handleCreateConversation
+        }
+        isCreating={isCreating}
+      />
 
       <ConfirmationDialog
         open={isDeleteDialogOpen}
