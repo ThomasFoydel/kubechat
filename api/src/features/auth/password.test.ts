@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  hashPassword,
-  verifyPassword
-} from './password'
+import { hashPassword, verifyPassword } from './password'
 import { makePassword } from '../../test/factories/auth'
 
 describe('password', () => {
@@ -20,10 +17,7 @@ describe('password', () => {
     const password = makePassword()
     const hash = await hashPassword(password)
 
-    const result = await verifyPassword(
-      password,
-      hash
-    )
+    const result = await verifyPassword(password, hash)
 
     expect(result).toBe(true)
   })
@@ -34,10 +28,7 @@ describe('password', () => {
 
     const hash = await hashPassword(password)
 
-    const result = await verifyPassword(
-      wrongPassword,
-      hash
-    )
+    const result = await verifyPassword(wrongPassword, hash)
 
     expect(result).toBe(false)
   })

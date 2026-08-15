@@ -8,12 +8,12 @@ const mockUseAuth = vi.fn()
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    replace: mockReplace
-  })
+    replace: mockReplace,
+  }),
 }))
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: () => mockUseAuth()
+  useAuth: () => mockUseAuth(),
 }))
 
 describe('RequireAuth', () => {
@@ -24,18 +24,16 @@ describe('RequireAuth', () => {
   it('renders nothing while authentication is loading', () => {
     mockUseAuth.mockReturnValue({
       isLoading: true,
-      isAuthenticated: false
+      isAuthenticated: false,
     })
 
     render(
       <RequireAuth>
         <div>Protected content</div>
-      </RequireAuth>
+      </RequireAuth>,
     )
 
-    expect(
-      screen.queryByText('Protected content')
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Protected content')).not.toBeInTheDocument()
 
     expect(mockReplace).not.toHaveBeenCalled()
   })
@@ -43,18 +41,16 @@ describe('RequireAuth', () => {
   it('renders children when authenticated', () => {
     mockUseAuth.mockReturnValue({
       isLoading: false,
-      isAuthenticated: true
+      isAuthenticated: true,
     })
 
     render(
       <RequireAuth>
         <div>Protected content</div>
-      </RequireAuth>
+      </RequireAuth>,
     )
 
-    expect(
-      screen.getByText('Protected content')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Protected content')).toBeInTheDocument()
 
     expect(mockReplace).not.toHaveBeenCalled()
   })
@@ -62,13 +58,13 @@ describe('RequireAuth', () => {
   it('redirects unauthenticated users to login', async () => {
     mockUseAuth.mockReturnValue({
       isLoading: false,
-      isAuthenticated: false
+      isAuthenticated: false,
     })
 
     render(
       <RequireAuth>
         <div>Protected content</div>
-      </RequireAuth>
+      </RequireAuth>,
     )
 
     await waitFor(() => {

@@ -3,9 +3,7 @@ interface Props {
 }
 
 export function StatusBadge({ status }: Props) {
-  const healthy =
-    status === 'ok' ||
-    status === 'connected'
+  const healthy = status === 'ok' || status === 'connected'
 
   return (
     <span>

@@ -1,14 +1,12 @@
 import { UserResponse } from '../../features/users/dto'
 
-export function makeUser(
-  overrides: Partial<UserResponse> = {}
-): UserResponse {
+export function makeUser(overrides: Partial<UserResponse> = {}): UserResponse {
   return {
     id: 'user-123',
     username: 'thomas',
     email: 'thomas@example.com',
     createdAt: '2026-08-09T00:00:00.000Z',
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -19,7 +17,7 @@ export function makeDatabaseUser(
     email: string
     passwordHash: string
     createdAt: Date
-  }> = {}
+  }> = {},
 ) {
   return {
     id: 'user-123',
@@ -27,7 +25,7 @@ export function makeDatabaseUser(
     email: 'thomas@example.com',
     passwordHash: 'secret-hash',
     createdAt: new Date('2026-08-09T12:00:00.000Z'),
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -36,13 +34,13 @@ export function makeCreateUserRequest(
     username: string
     email: string
     password: string
-  }> = {}
+  }> = {},
 ) {
   return {
     username: 'thomas',
     email: 'thomas@example.com',
     password: 'password123',
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -51,6 +49,6 @@ export function makeUserResponse(): UserResponse {
     id: 'user-123',
     username: 'thomas',
     email: 'thomas@example.com',
-    createdAt: '2026-08-09T00:00:00.000Z'
+    createdAt: '2026-08-09T00:00:00.000Z',
   }
 }

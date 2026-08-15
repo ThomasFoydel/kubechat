@@ -4,9 +4,7 @@ import { createUserSchema } from './validation'
 
 describe('createUserSchema', () => {
   it('accepts a valid user', () => {
-    const result = createUserSchema.safeParse(
-      makeCreateUserRequest()
-    )
+    const result = createUserSchema.safeParse(makeCreateUserRequest())
 
     expect(result.success).toBe(true)
   })
@@ -14,8 +12,8 @@ describe('createUserSchema', () => {
   it('rejects a username shorter than 3 characters', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
-        username: 'ab'
-      })
+        username: 'ab',
+      }),
     )
 
     expect(result.success).toBe(false)
@@ -24,8 +22,8 @@ describe('createUserSchema', () => {
   it('rejects a username longer than 50 characters', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
-        username: 'a'.repeat(51)
-      })
+        username: 'a'.repeat(51),
+      }),
     )
 
     expect(result.success).toBe(false)
@@ -34,8 +32,8 @@ describe('createUserSchema', () => {
   it('rejects an invalid email address', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
-        email: 'not-an-email'
-      })
+        email: 'not-an-email',
+      }),
     )
 
     expect(result.success).toBe(false)
@@ -44,8 +42,8 @@ describe('createUserSchema', () => {
   it('rejects a password shorter than 8 characters', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
-        password: 'short'
-      })
+        password: 'short',
+      }),
     )
 
     expect(result.success).toBe(false)
@@ -54,8 +52,8 @@ describe('createUserSchema', () => {
   it('rejects a password longer than 100 characters', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
-        password: 'a'.repeat(101)
-      })
+        password: 'a'.repeat(101),
+      }),
     )
 
     expect(result.success).toBe(false)
@@ -65,8 +63,8 @@ describe('createUserSchema', () => {
     const result = createUserSchema.safeParse(
       makeCreateUserRequest({
         username: '  thomas  ',
-        email: '  thomas@example.com  '
-      })
+        email: '  thomas@example.com  ',
+      }),
     )
 
     expect(result.success).toBe(true)

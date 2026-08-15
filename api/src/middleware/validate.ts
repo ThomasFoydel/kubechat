@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { ZodType } from 'zod'
 
 export function validateBody(schema: ZodType) {
-  return (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body)
 
     if (!result.success) {
@@ -14,8 +10,8 @@ export function validateBody(schema: ZodType) {
         message: 'Validation failed',
         errors: result.error.issues.map((issue) => ({
           field: issue.path.join('.'),
-          message: issue.message
-        }))
+          message: issue.message,
+        })),
       })
       return
     }

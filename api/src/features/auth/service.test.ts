@@ -1,33 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { userService } from '../users/service'
-import {
-  makeAuthUser,
-  makePassword,
-  makeSessionId
-} from '../../test/factories/auth'
+import { makeAuthUser, makePassword, makeSessionId } from '../../test/factories/auth'
 import { authService } from './service'
 import { hashPassword, verifyPassword } from './password'
-import {
-  createSession,
-  deleteSession
-} from './session'
+import { createSession, deleteSession } from './session'
 
 vi.mock('../users/service', () => ({
   userService: {
     getUserByEmail: vi.fn(),
-    createUser: vi.fn()
-  }
+    createUser: vi.fn(),
+  },
 }))
 
 vi.mock('./password', () => ({
   hashPassword: vi.fn(),
-  verifyPassword: vi.fn()
+  verifyPassword: vi.fn(),
 }))
 
 vi.mock('./session', () => ({
   createSession: vi.fn(),
-  deleteSession: vi.fn()
+  deleteSession: vi.fn(),
 }))
 
 describe('authService.register', () => {
@@ -42,13 +35,11 @@ describe('authService.register', () => {
 
     vi.mocked(userService.getUserByEmail).mockResolvedValue(null)
 
-    vi.mocked(hashPassword).mockResolvedValue(
-      'hashed-password'
-    )
+    vi.mocked(hashPassword).mockResolvedValue('hashed-password')
 
     vi.mocked(userService.createUser).mockResolvedValue({
       ...authUser,
-      createdAt: '2026-08-09T00:00:00.000Z'
+      createdAt: '2026-08-09T00:00:00.000Z',
     })
 
     vi.mocked(createSession).mockResolvedValue(sessionId)
@@ -56,26 +47,24 @@ describe('authService.register', () => {
     const result = await authService.register({
       username: authUser.username,
       email: authUser.email,
-      password
+      password,
     })
 
-    expect(userService.getUserByEmail).toHaveBeenCalledWith(
-      authUser.email
-    )
+    expect(userService.getUserByEmail).toHaveBeenCalledWith(authUser.email)
 
     expect(hashPassword).toHaveBeenCalledWith(password)
 
     expect(userService.createUser).toHaveBeenCalledWith({
       username: authUser.username,
       email: authUser.email,
-      passwordHash: 'hashed-password'
+      passwordHash: 'hashed-password',
     })
 
     expect(createSession).toHaveBeenCalledWith(authUser.id)
 
     expect(result).toEqual({
       sessionId,
-      user: authUser
+      user: authUser,
     })
   })
 
@@ -85,15 +74,15 @@ describe('authService.register', () => {
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
       ...authUser,
       passwordHash: 'existing-hash',
-      createdAt: new Date()
+      createdAt: new Date(),
     })
 
     await expect(
       authService.register({
         username: authUser.username,
         email: authUser.email,
-        password: makePassword()
-      })
+        password: makePassword(),
+      }),
     ).rejects.toThrow('Email already registered')
 
     expect(hashPassword).not.toHaveBeenCalled()
@@ -115,7 +104,7 @@ describe('authService.login', () => {
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
       ...authUser,
       passwordHash: 'hashed-password',
-      createdAt: new Date()
+      createdAt: new Date(),
     })
 
     vi.mocked(verifyPassword).mockResolvedValue(true)
@@ -123,23 +112,18 @@ describe('authService.login', () => {
 
     const result = await authService.login({
       email: authUser.email,
-      password
+      password,
     })
 
-    expect(userService.getUserByEmail).toHaveBeenCalledWith(
-      authUser.email
-    )
+    expect(userService.getUserByEmail).toHaveBeenCalledWith(authUser.email)
 
-    expect(verifyPassword).toHaveBeenCalledWith(
-      password,
-      'hashed-password'
-    )
+    expect(verifyPassword).toHaveBeenCalledWith(password, 'hashed-password')
 
     expect(createSession).toHaveBeenCalledWith(authUser.id)
 
     expect(result).toEqual({
       sessionId,
-      user: authUser
+      user: authUser,
     })
   })
 
@@ -151,8 +135,8 @@ describe('authService.login', () => {
     await expect(
       authService.login({
         email,
-        password: makePassword()
-      })
+        password: makePassword(),
+      }),
     ).rejects.toThrow('Invalid email or password')
 
     expect(verifyPassword).not.toHaveBeenCalled()
@@ -166,7 +150,7 @@ describe('authService.login', () => {
     vi.mocked(userService.getUserByEmail).mockResolvedValue({
       ...authUser,
       passwordHash: 'hashed-password',
-      createdAt: new Date()
+      createdAt: new Date(),
     })
 
     vi.mocked(verifyPassword).mockResolvedValue(false)
@@ -174,14 +158,11 @@ describe('authService.login', () => {
     await expect(
       authService.login({
         email: authUser.email,
-        password
-      })
+        password,
+      }),
     ).rejects.toThrow('Invalid email or password')
 
-    expect(verifyPassword).toHaveBeenCalledWith(
-      password,
-      'hashed-password'
-    )
+    expect(verifyPassword).toHaveBeenCalledWith(password, 'hashed-password')
 
     expect(createSession).not.toHaveBeenCalled()
   })

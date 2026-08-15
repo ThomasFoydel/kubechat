@@ -1,14 +1,11 @@
 import { Request, Response } from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  requireAuth,
-  AuthenticatedRequest
-} from './middleware'
+import { requireAuth, AuthenticatedRequest } from './middleware'
 import { getUserIdFromSession } from './session'
 
 vi.mock('./session', () => ({
-  getUserIdFromSession: vi.fn()
+  getUserIdFromSession: vi.fn(),
 }))
 
 describe('requireAuth', () => {
@@ -18,12 +15,12 @@ describe('requireAuth', () => {
 
   it('returns 401 when no session cookie is present', async () => {
     const req = {
-      cookies: {}
+      cookies: {},
     } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
-      json: vi.fn()
+      json: vi.fn(),
     } as unknown as Response
 
     const next = vi.fn()
@@ -32,7 +29,7 @@ describe('requireAuth', () => {
 
     expect(res.status).toHaveBeenCalledWith(401)
     expect(res.json).toHaveBeenCalledWith({
-      message: 'Authentication required'
+      message: 'Authentication required',
     })
 
     expect(getUserIdFromSession).not.toHaveBeenCalled()
@@ -44,26 +41,24 @@ describe('requireAuth', () => {
 
     const req = {
       cookies: {
-        kubechat_session: 'invalid-session'
-      }
+        kubechat_session: 'invalid-session',
+      },
     } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
-      json: vi.fn()
+      json: vi.fn(),
     } as unknown as Response
 
     const next = vi.fn()
 
     await requireAuth(req, res, next)
 
-    expect(getUserIdFromSession).toHaveBeenCalledWith(
-      'invalid-session'
-    )
+    expect(getUserIdFromSession).toHaveBeenCalledWith('invalid-session')
 
     expect(res.status).toHaveBeenCalledWith(401)
     expect(res.json).toHaveBeenCalledWith({
-      message: 'Invalid or expired session'
+      message: 'Invalid or expired session',
     })
 
     expect(next).not.toHaveBeenCalled()
@@ -75,22 +70,20 @@ describe('requireAuth', () => {
 
     const req = {
       cookies: {
-        kubechat_session: 'valid-session'
-      }
+        kubechat_session: 'valid-session',
+      },
     } as unknown as AuthenticatedRequest
 
     const res = {
       status: vi.fn().mockReturnThis(),
-      json: vi.fn()
+      json: vi.fn(),
     } as unknown as Response
 
     const next = vi.fn()
 
     await requireAuth(req, res, next)
 
-    expect(getUserIdFromSession).toHaveBeenCalledWith(
-      'valid-session'
-    )
+    expect(getUserIdFromSession).toHaveBeenCalledWith('valid-session')
 
     expect(req.userId).toBe('user-123')
     expect(next).toHaveBeenCalledOnce()

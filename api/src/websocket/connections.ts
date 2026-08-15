@@ -1,31 +1,17 @@
 import { WebSocket } from 'ws'
 
 export class WebSocketConnectionManager {
-  private conversations = new Map<
-    string,
-    Set<WebSocket>
-  >()
+  private conversations = new Map<string, Set<WebSocket>>()
 
-  subscribe(
-    conversationId: string,
-    socket: WebSocket
-  ): boolean {
-    let connections =
-      this.conversations.get(
-        conversationId
-      )
+  subscribe(conversationId: string, socket: WebSocket): boolean {
+    let connections = this.conversations.get(conversationId)
 
-    const wasEmpty =
-      !connections ||
-      connections.size === 0
+    const wasEmpty = !connections || connections.size === 0
 
     if (!connections) {
       connections = new Set()
 
-      this.conversations.set(
-        conversationId,
-        connections
-      )
+      this.conversations.set(conversationId, connections)
     }
 
     connections.add(socket)
@@ -33,14 +19,8 @@ export class WebSocketConnectionManager {
     return wasEmpty
   }
 
-  unsubscribe(
-    conversationId: string,
-    socket: WebSocket
-  ): boolean {
-    const connections =
-      this.conversations.get(
-        conversationId
-      )
+  unsubscribe(conversationId: string, socket: WebSocket): boolean {
+    const connections = this.conversations.get(conversationId)
 
     if (!connections) {
       return false
@@ -49,9 +29,7 @@ export class WebSocketConnectionManager {
     connections.delete(socket)
 
     if (connections.size === 0) {
-      this.conversations.delete(
-        conversationId
-      )
+      this.conversations.delete(conversationId)
 
       return true
     }
@@ -59,25 +37,16 @@ export class WebSocketConnectionManager {
     return false
   }
 
-  unsubscribeAll(
-    socket: WebSocket
-  ): string[] {
+  unsubscribeAll(socket: WebSocket): string[] {
     const emptyConversations: string[] = []
 
-    for (const [
-      conversationId,
-      connections
-    ] of this.conversations) {
+    for (const [conversationId, connections] of this.conversations) {
       connections.delete(socket)
 
       if (connections.size === 0) {
-        this.conversations.delete(
-          conversationId
-        )
+        this.conversations.delete(conversationId)
 
-        emptyConversations.push(
-          conversationId
-        )
+        emptyConversations.push(conversationId)
       }
     }
 
@@ -85,29 +54,18 @@ export class WebSocketConnectionManager {
   }
 
   getSubscribedConversationIds(): string[] {
-    return Array.from(
-      this.conversations.keys()
-    )
+    return Array.from(this.conversations.keys())
   }
 
-  broadcast(
-    conversationId: string,
-    message: string
-  ): void {
-    const connections =
-      this.conversations.get(
-        conversationId
-      )
+  broadcast(conversationId: string, message: string): void {
+    const connections = this.conversations.get(conversationId)
 
     if (!connections) {
       return
     }
 
     for (const socket of connections) {
-      if (
-        socket.readyState ===
-        WebSocket.OPEN
-      ) {
+      if (socket.readyState === WebSocket.OPEN) {
         socket.send(message)
       }
     }

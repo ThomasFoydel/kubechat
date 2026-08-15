@@ -1,10 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 
-import type {
-  Conversation,
-  Message,
-  ConversationVisibility
-} from '../types/conversation.types'
+import type { Conversation, Message, ConversationVisibility } from '../types/conversation.types'
 
 interface GraphQLResponse<T> {
   data?: T
@@ -13,48 +9,30 @@ interface GraphQLResponse<T> {
   }>
 }
 
-async function graphqlRequest<T>(
-  query: string,
-  variables?: Record<string, unknown>
-): Promise<T> {
-  const response =
-    await apiClient<GraphQLResponse<T>>(
-      '/graphql',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          query,
-          variables
-        })
-      }
-    )
+async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const response = await apiClient<GraphQLResponse<T>>('/graphql', {
+    method: 'POST',
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+  })
 
-  if (
-    response.errors &&
-    response.errors.length > 0
-  ) {
-    throw new Error(
-      response.errors[0]?.message ??
-        'GraphQL request failed'
-    )
+  if (response.errors && response.errors.length > 0) {
+    throw new Error(response.errors[0]?.message ?? 'GraphQL request failed')
   }
 
   if (!response.data) {
-    throw new Error(
-      'GraphQL response did not contain data'
-    )
+    throw new Error('GraphQL response did not contain data')
   }
 
   return response.data
 }
 
-export async function getConversations(): Promise<
-  Conversation[]
-> {
-  const response =
-    await graphqlRequest<{
-      conversations: Conversation[]
-    }>(`
+export async function getConversations(): Promise<Conversation[]> {
+  const response = await graphqlRequest<{
+    conversations: Conversation[]
+  }>(`
       query GetConversations {
         conversations {
           id
@@ -72,13 +50,12 @@ export async function getConversations(): Promise<
 
 export async function createConversation(
   title?: string,
-  visibility?: ConversationVisibility
+  visibility?: ConversationVisibility,
 ): Promise<Conversation> {
-  const response =
-    await graphqlRequest<{
-      createConversation: Conversation
-    }>(
-      `
+  const response = await graphqlRequest<{
+    createConversation: Conversation
+  }>(
+    `
         mutation CreateConversation(
           $input: CreateConversationInput!
         ) {
@@ -94,49 +71,43 @@ export async function createConversation(
           }
         }
       `,
-      {
-        input: {
-          title,
-          visibility
-        }
-      }
-    )
+    {
+      input: {
+        title,
+        visibility,
+      },
+    },
+  )
 
   return response.createConversation
 }
 
-export async function deleteConversation(
-  conversationId: string
-): Promise<boolean> {
-  const response =
-    await graphqlRequest<{
-      deleteConversation: boolean
-    }>(
-      `
+export async function deleteConversation(conversationId: string): Promise<boolean> {
+  const response = await graphqlRequest<{
+    deleteConversation: boolean
+  }>(
+    `
         mutation DeleteConversation(
           $id: ID!
         ) {
           deleteConversation(id: $id)
         }
       `,
-      {
-        id: conversationId
-      }
-    )
+    {
+      id: conversationId,
+    },
+  )
 
   return response.deleteConversation
 }
 
-export async function getMessages(
-  conversationId: string
-): Promise<Message[]> {
-  const response =
-    await graphqlRequest<{
-      conversation: {
-        messages: Message[]
-      } | null
-    }>(
-      `
+export async function getMessages(conversationId: string): Promise<Message[]> {
+  const response = await graphqlRequest<{
+    conversation: {
+      messages: Message[]
+    } | null
+  }>(
+    `
         query GetConversation(
           $id: ID!
         ) {
@@ -152,10 +123,10 @@ export async function getMessages(
           }
         }
       `,
-      {
-        id: conversationId
-      }
-    )
+    {
+      id: conversationId,
+    },
+  )
 
   return response.conversation?.messages ?? []
 }

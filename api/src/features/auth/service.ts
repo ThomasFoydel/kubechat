@@ -1,10 +1,7 @@
 import { userService } from '../users/service'
 import { hashPassword, verifyPassword } from './password'
 import { LoginRequest, RegisterRequest } from './dto'
-import {
-  createSession,
-  deleteSession
-} from './session'
+import { createSession, deleteSession } from './session'
 
 async function register(input: RegisterRequest) {
   const existingUser = await userService.getUserByEmail(input.email)
@@ -18,7 +15,7 @@ async function register(input: RegisterRequest) {
   const user = await userService.createUser({
     username: input.username,
     email: input.email,
-    passwordHash
+    passwordHash,
   })
 
   const sessionId = await createSession(user.id)
@@ -28,8 +25,8 @@ async function register(input: RegisterRequest) {
     user: {
       id: user.id,
       username: user.username,
-      email: user.email
-    }
+      email: user.email,
+    },
   }
 }
 
@@ -40,10 +37,7 @@ async function login(input: LoginRequest) {
     throw new Error('Invalid email or password')
   }
 
-  const passwordValid = await verifyPassword(
-    input.password,
-    user.passwordHash
-  )
+  const passwordValid = await verifyPassword(input.password, user.passwordHash)
 
   if (!passwordValid) {
     throw new Error('Invalid email or password')
@@ -56,8 +50,8 @@ async function login(input: LoginRequest) {
     user: {
       id: user.id,
       username: user.username,
-      email: user.email
-    }
+      email: user.email,
+    },
   }
 }
 
@@ -68,5 +62,5 @@ async function logout(sessionId: string): Promise<void> {
 export const authService = {
   register,
   login,
-  logout
+  logout,
 }

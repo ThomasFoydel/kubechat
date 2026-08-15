@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { config } from '../config/env'
 
 const adapter = new PrismaPg({
-  connectionString: config.databaseUrl
+  connectionString: config.databaseUrl,
 })
 
 export const prisma = new PrismaClient({ adapter })

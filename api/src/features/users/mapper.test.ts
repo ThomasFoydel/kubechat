@@ -12,7 +12,7 @@ describe('toUserResponse', () => {
       id: user.id,
       username: user.username,
       email: user.email,
-      createdAt: user.createdAt.toISOString()
+      createdAt: user.createdAt.toISOString(),
     })
   })
 

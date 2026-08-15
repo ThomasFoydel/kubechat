@@ -6,37 +6,35 @@ export type UserModel = User
 async function createUser(
   username: string,
   email: string,
-  passwordHash: string
+  passwordHash: string,
 ): Promise<UserModel> {
   return prisma.user.create({
     data: {
       username,
       email,
-      passwordHash
-    }
+      passwordHash,
+    },
   })
 }
 
 async function getUserById(id: string): Promise<UserModel | null> {
   return prisma.user.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   })
 }
 
-async function getUserByEmail(
-  email: string
-): Promise<UserModel | null> {
+async function getUserByEmail(email: string): Promise<UserModel | null> {
   return prisma.user.findUnique({
     where: {
-      email
-    }
+      email,
+    },
   })
 }
 
 export const userRepository = {
   createUser,
   getUserById,
-  getUserByEmail
+  getUserByEmail,
 }

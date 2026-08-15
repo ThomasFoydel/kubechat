@@ -5,7 +5,7 @@ export async function livenessCheck(_req: Request, res: Response) {
   return res.json({
     status: 'ok',
     service: 'kubechat-api',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }
 

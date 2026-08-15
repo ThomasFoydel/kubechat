@@ -8,8 +8,6 @@ export interface HealthResponse {
 
 export const healthApi = {
   getLive() {
-    return apiClient<HealthResponse>(
-      '/api/v1/health/live'
-    )
+    return apiClient<HealthResponse>('/api/v1/health/live')
   },
 }

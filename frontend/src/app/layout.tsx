@@ -6,25 +6,23 @@ import { Providers } from './providers'
 
 const geist = Geist({
   variable: '--font-geist',
-  subsets: ['latin']
+  subsets: ['latin'],
 })
 
 export const metadata: Metadata = {
   title: 'KubeChat Dashboard',
-  description: 'Kubernetes-native chat platform dashboard'
+  description: 'Kubernetes-native chat platform dashboard',
 }
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
     <html lang="en" className="dark">
       <body className={`${geist.variable} antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

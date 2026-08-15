@@ -4,26 +4,18 @@ import { config } from '../config/env'
 export const redis = createClient({
   url: config.redisUrl,
   socket: {
-    reconnectStrategy: retries => {
-      const delay = Math.min(
-        1000 * 2 ** retries,
-        30000
-      )
+    reconnectStrategy: (retries) => {
+      const delay = Math.min(1000 * 2 ** retries, 30000)
 
-      console.warn(
-        `Redis reconnecting in ${delay}ms`
-      )
+      console.warn(`Redis reconnecting in ${delay}ms`)
 
       return delay
-    }
-  }
+    },
+  },
 })
 
-redis.on('error', error => {
-  console.error(
-    'Redis error:',
-    error
-  )
+redis.on('error', (error) => {
+  console.error('Redis error:', error)
 })
 
 redis.on('connect', () => {

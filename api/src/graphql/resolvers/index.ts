@@ -1,22 +1,22 @@
 import {
   conversationFieldResolvers,
-  conversationMutationResolvers
+  conversationMutationResolvers,
 } from '../features/conversations/resolvers'
 import { queryResolvers } from '../features/query/resolvers'
 import { userResolvers } from '../features/users/resolvers'
 
 export const resolvers = {
   Query: {
-    ...queryResolvers
+    ...queryResolvers,
   },
 
   Conversation: {
-    ...conversationFieldResolvers
+    ...conversationFieldResolvers,
   },
 
   Mutation: {
-    ...conversationMutationResolvers
+    ...conversationMutationResolvers,
   },
 
-  ...userResolvers
+  ...userResolvers,
 }

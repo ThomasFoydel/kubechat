@@ -24,16 +24,9 @@ input UpdateConversationInput {
 }
 
 extend type Mutation {
-  createConversation(
-    input: CreateConversationInput!
-  ): Conversation!
+  createConversation(input: CreateConversationInput!): Conversation!
 
-  updateConversation(
-    id: ID!
-    input: UpdateConversationInput!
-  ): Conversation!
+  updateConversation(id: ID!, input: UpdateConversationInput!): Conversation!
 
-  deleteConversation(
-    id: ID!
-  ): Boolean!
+  deleteConversation(id: ID!): Boolean!
 }

@@ -1,6 +1,2 @@
 export type ConnectionStatus =
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'disconnected'
-  | 'error'
+  'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'

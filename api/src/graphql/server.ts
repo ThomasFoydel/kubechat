@@ -8,20 +8,15 @@ import path from 'path'
 import { createGraphQLContext } from './context'
 import { resolvers } from './resolvers'
 
-const typeDefs = loadFilesSync(
-  path.join(
-    __dirname,
-    'features/**/*.graphql'
-  )
-)
+const typeDefs = loadFilesSync(path.join(__dirname, 'features/**/*.graphql'))
 
 const schema = makeExecutableSchema({
   typeDefs,
-  resolvers
+  resolvers,
 })
 
 const apolloServer = new ApolloServer({
-  schema
+  schema,
 })
 
 let started = false
@@ -33,7 +28,6 @@ export async function getGraphQLMiddleware(): Promise<RequestHandler> {
   }
 
   return expressMiddleware(apolloServer, {
-    context: async ({ req }) =>
-      createGraphQLContext(req)
+    context: async ({ req }) => createGraphQLContext(req),
   })
 }

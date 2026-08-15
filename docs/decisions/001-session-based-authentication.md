@@ -27,11 +27,11 @@ The API resolves the session through Redis on authenticated requests.
 
 Server-side sessions provide several properties that are useful for KubeChat:
 
-* Sessions can be invalidated immediately by deleting them from Redis.
-* Logout can invalidate the server-side session rather than merely deleting a client-side token.
-* Session lifetime and security policies can be changed centrally.
-* Sensitive authentication state does not need to be encoded into a client-held token.
-* The approach works naturally with multiple horizontally scaled API instances when session state is centralized.
+- Sessions can be invalidated immediately by deleting them from Redis.
+- Logout can invalidate the server-side session rather than merely deleting a client-side token.
+- Session lifetime and security policies can be changed centrally.
+- Sensitive authentication state does not need to be encoded into a client-held token.
+- The approach works naturally with multiple horizontally scaled API instances when session state is centralized.
 
 JWTs would provide advantages for some architectures, particularly systems requiring independently verifiable tokens across many services. However, KubeChat currently has a centralized API and does not require independent services to validate authentication tokens.
 
@@ -41,26 +41,26 @@ The additional complexity of token rotation, revocation, and short-lived access/
 
 ### Positive
 
-* Centralized session invalidation.
-* Straightforward logout semantics.
-* API instances remain stateless with respect to local process memory.
-* Authentication state can be shared across API replicas through Redis.
-* HTTP-only cookies reduce exposure of the session identifier to client-side JavaScript.
+- Centralized session invalidation.
+- Straightforward logout semantics.
+- API instances remain stateless with respect to local process memory.
+- Authentication state can be shared across API replicas through Redis.
+- HTTP-only cookies reduce exposure of the session identifier to client-side JavaScript.
 
 ### Negative
 
-* Authenticated requests require a Redis lookup.
-* Redis becomes an important dependency for authentication.
-* Session expiration and cleanup must be managed.
-* Distributed session storage must be available to all API instances.
+- Authenticated requests require a Redis lookup.
+- Redis becomes an important dependency for authentication.
+- Session expiration and cleanup must be managed.
+- Distributed session storage must be available to all API instances.
 
 ## Security Considerations
 
 Session cookies are configured with:
 
-* `HttpOnly`
-* `SameSite=Lax`
-* `Secure` in production
-* A finite expiration period
+- `HttpOnly`
+- `SameSite=Lax`
+- `Secure` in production
+- A finite expiration period
 
 Session identifiers are randomly generated and stored server-side rather than containing user information.

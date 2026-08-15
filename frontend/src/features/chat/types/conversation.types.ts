@@ -1,6 +1,4 @@
-export type ConversationVisibility =
-  | 'PUBLIC'
-  | 'PRIVATE'
+export type ConversationVisibility = 'PUBLIC' | 'PRIVATE'
 
 export interface Conversation {
   id: string

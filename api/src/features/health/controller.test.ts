@@ -1,23 +1,11 @@
-import {
-  Request,
-  Response
-} from 'express'
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest'
+import { Request, Response } from 'express'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  livenessCheck,
-  readinessCheck
-} from './controller'
+import { livenessCheck, readinessCheck } from './controller'
 import { getReadinessStatus } from './service'
 
 vi.mock('./service', () => ({
-  getReadinessStatus: vi.fn()
+  getReadinessStatus: vi.fn(),
 }))
 
 describe('livenessCheck', () => {
@@ -29,7 +17,7 @@ describe('livenessCheck', () => {
     const req = {} as Request
 
     const res = {
-      json: vi.fn()
+      json: vi.fn(),
     } as unknown as Response
 
     await livenessCheck(req, res)
@@ -37,8 +25,8 @@ describe('livenessCheck', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'ok',
-        service: 'kubechat-api'
-      })
+        service: 'kubechat-api',
+      }),
     )
   })
 
@@ -46,20 +34,16 @@ describe('livenessCheck', () => {
     const req = {} as Request
 
     const res = {
-      json: vi.fn()
+      json: vi.fn(),
     } as unknown as Response
 
     await livenessCheck(req, res)
 
     const response = vi.mocked(res.json).mock.calls[0][0]
 
-    expect(response.timestamp).toEqual(
-      expect.any(String)
-    )
+    expect(response.timestamp).toEqual(expect.any(String))
 
-    expect(
-      Number.isNaN(Date.parse(response.timestamp))
-    ).toBe(false)
+    expect(Number.isNaN(Date.parse(response.timestamp))).toBe(false)
   })
 })
 
@@ -74,7 +58,7 @@ describe('readinessCheck', () => {
       service: 'kubechat-api',
       database: 'connected',
       redis: 'connected',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     vi.mocked(getReadinessStatus).mockResolvedValue(health)
@@ -83,7 +67,7 @@ describe('readinessCheck', () => {
 
     const res = {
       json: vi.fn(),
-      status: vi.fn().mockReturnThis()
+      status: vi.fn().mockReturnThis(),
     } as unknown as Response
 
     await readinessCheck(req, res)
@@ -99,7 +83,7 @@ describe('readinessCheck', () => {
       service: 'kubechat-api',
       database: 'unavailable',
       redis: 'connected',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
     vi.mocked(getReadinessStatus).mockResolvedValue(health)
@@ -108,7 +92,7 @@ describe('readinessCheck', () => {
 
     const res = {
       json: vi.fn(),
-      status: vi.fn().mockReturnThis()
+      status: vi.fn().mockReturnThis(),
     } as unknown as Response
 
     await readinessCheck(req, res)

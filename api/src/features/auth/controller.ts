@@ -1,17 +1,13 @@
 import { Request, Response } from 'express'
 import { userService } from '../users/service'
-import {
-  clearSessionCookie,
-  getSessionCookie,
-  setSessionCookie
-} from './cookies'
+import { clearSessionCookie, getSessionCookie, setSessionCookie } from './cookies'
 import { LoginRequest, RegisterRequest } from './dto'
 import { AuthenticatedRequest } from './middleware'
 import { authService } from './service'
 
 export async function register(
   req: Request<{}, {}, RegisterRequest>,
-  res: Response
+  res: Response,
 ): Promise<void> {
   try {
     const result = await authService.register(req.body)
@@ -22,26 +18,20 @@ export async function register(
   } catch (error) {
     console.error('Register error:', error)
 
-    if (
-      error instanceof Error &&
-      error.message === 'Email already registered'
-    ) {
+    if (error instanceof Error && error.message === 'Email already registered') {
       res.status(409).json({
-        message: error.message
+        message: error.message,
       })
       return
     }
 
     res.status(500).json({
-      message: 'Internal server error'
+      message: 'Internal server error',
     })
   }
 }
 
-export async function login(
-  req: Request<{}, {}, LoginRequest>,
-  res: Response
-): Promise<void> {
+export async function login(req: Request<{}, {}, LoginRequest>, res: Response): Promise<void> {
   try {
     const result = await authService.login(req.body)
 
@@ -51,26 +41,20 @@ export async function login(
   } catch (error) {
     console.error('Login error:', error)
 
-    if (
-      error instanceof Error &&
-      error.message === 'Invalid email or password'
-    ) {
+    if (error instanceof Error && error.message === 'Invalid email or password') {
       res.status(401).json({
-        message: error.message
+        message: error.message,
       })
       return
     }
 
     res.status(500).json({
-      message: 'Internal server error'
+      message: 'Internal server error',
     })
   }
 }
 
-export async function logout(
-  req: Request,
-  res: Response
-): Promise<void> {
+export async function logout(req: Request, res: Response): Promise<void> {
   const sessionId = getSessionCookie(req)
 
   if (sessionId) {
@@ -82,13 +66,10 @@ export async function logout(
   res.status(204).send()
 }
 
-export async function getCurrentUser(
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> {
+export async function getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<void> {
   if (!req.userId) {
     res.status(401).json({
-      message: 'Authentication required'
+      message: 'Authentication required',
     })
     return
   }
@@ -97,7 +78,7 @@ export async function getCurrentUser(
 
   if (!user) {
     res.status(401).json({
-      message: 'User no longer exists'
+      message: 'User no longer exists',
     })
     return
   }

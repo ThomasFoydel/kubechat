@@ -1,43 +1,28 @@
-import type {
-  ClientMessage,
-  ServerMessage
-} from '../types/websocket.protocol'
+import type { ClientMessage, ServerMessage } from '../types/websocket.protocol'
 
 export type WebSocketConnectionStatus =
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'disconnected'
-  | 'error'
+  'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'
 
 export interface ChatWebSocketClientOptions {
   onMessage: (message: ServerMessage) => void
-  onStatusChange: (
-    status: WebSocketConnectionStatus
-  ) => void
+  onStatusChange: (status: WebSocketConnectionStatus) => void
 }
 
 const INITIAL_RECONNECT_DELAY = 1_000
 const MAX_RECONNECT_DELAY = 30_000
 
 function getWebSocketUrl(): string {
-  const configuredUrl =
-    process.env.NEXT_PUBLIC_WS_URL
+  const configuredUrl = process.env.NEXT_PUBLIC_WS_URL
 
   if (configuredUrl) {
     return configuredUrl
   }
 
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ??
-    'https://kubechat.duckdns.org'
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://kubechat.duckdns.org'
 
   const url = new URL(apiUrl)
 
-  url.protocol =
-    url.protocol === 'https:'
-      ? 'wss:'
-      : 'ws:'
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
 
   url.pathname = '/ws'
   url.search = ''
@@ -45,9 +30,7 @@ function getWebSocketUrl(): string {
   return url.toString()
 }
 
-function parseServerMessage(
-  data: string
-): ServerMessage | null {
+function parseServerMessage(data: string): ServerMessage | null {
   try {
     const parsed: unknown = JSON.parse(data)
 
@@ -69,110 +52,73 @@ function parseServerMessage(
 export class ChatWebSocketClient {
   private socket: WebSocket | null = null
 
-  private reconnectTimer:
-    ReturnType<typeof setTimeout> | null =
-    null
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
   private reconnectAttempt = 0
 
   private manuallyClosed = false
 
-  private subscribedConversations =
-    new Set<string>()
+  private subscribedConversations = new Set<string>()
 
-  private readonly options:
-    ChatWebSocketClientOptions
+  private readonly options: ChatWebSocketClientOptions
 
-  constructor(
-    options: ChatWebSocketClientOptions
-  ) {
+  constructor(options: ChatWebSocketClientOptions) {
     this.options = options
   }
 
   connect(): void {
     if (
-      this.socket?.readyState ===
-        WebSocket.OPEN ||
-      this.socket?.readyState ===
-        WebSocket.CONNECTING
+      this.socket?.readyState === WebSocket.OPEN ||
+      this.socket?.readyState === WebSocket.CONNECTING
     ) {
       return
     }
 
     this.manuallyClosed = false
 
-    this.options.onStatusChange(
-      this.reconnectAttempt > 0
-        ? 'reconnecting'
-        : 'connecting'
-    )
+    this.options.onStatusChange(this.reconnectAttempt > 0 ? 'reconnecting' : 'connecting')
 
-    const socket = new WebSocket(
-      getWebSocketUrl()
-    )
+    const socket = new WebSocket(getWebSocketUrl())
 
     this.socket = socket
 
-    socket.addEventListener(
-      'open',
-      () => {
-        this.reconnectAttempt = 0
+    socket.addEventListener('open', () => {
+      this.reconnectAttempt = 0
 
-        this.options.onStatusChange(
-          'connected'
-        )
+      this.options.onStatusChange('connected')
 
-        this.resubscribe()
+      this.resubscribe()
+    })
+
+    socket.addEventListener('message', (event) => {
+      const message = parseServerMessage(String(event.data))
+
+      if (!message) {
+        console.error('Received invalid WebSocket message')
+
+        return
       }
-    )
 
-    socket.addEventListener(
-      'message',
-      event => {
-        const message =
-          parseServerMessage(
-            String(event.data)
-          )
+      this.options.onMessage(message)
+    })
 
-        if (!message) {
-          console.error(
-            'Received invalid WebSocket message'
-          )
+    socket.addEventListener('error', () => {
+      this.options.onStatusChange('error')
+    })
 
-          return
-        }
-
-        this.options.onMessage(message)
+    socket.addEventListener('close', () => {
+      if (this.socket === socket) {
+        this.socket = null
       }
-    )
 
-    socket.addEventListener(
-      'error',
-      () => {
-        this.options.onStatusChange(
-          'error'
-        )
+      if (this.manuallyClosed) {
+        this.options.onStatusChange('disconnected')
+
+        return
       }
-    )
 
-    socket.addEventListener(
-      'close',
-      () => {
-        if (this.socket === socket) {
-          this.socket = null
-        }
-
-        if (this.manuallyClosed) {
-          this.options.onStatusChange(
-            'disconnected'
-          )
-
-          return
-        }
-
-        this.scheduleReconnect()
-      }
-    )
+      this.scheduleReconnect()
+    })
   }
 
   disconnect(): void {
@@ -188,84 +134,57 @@ export class ChatWebSocketClient {
       socket.close()
     }
 
-    this.options.onStatusChange(
-      'disconnected'
-    )
+    this.options.onStatusChange('disconnected')
   }
 
-  subscribe(
-    conversationId: string
-  ): void {
-    this.subscribedConversations.add(
-      conversationId
-    )
+  subscribe(conversationId: string): void {
+    this.subscribedConversations.add(conversationId)
 
     if (this.isConnected()) {
       this.send({
-        type:
-          'conversation.subscribe',
-        conversationId
+        type: 'conversation.subscribe',
+        conversationId,
       })
     }
   }
 
-  unsubscribe(
-    conversationId: string
-  ): void {
-    this.subscribedConversations.delete(
-      conversationId
-    )
+  unsubscribe(conversationId: string): void {
+    this.subscribedConversations.delete(conversationId)
 
     if (this.isConnected()) {
       this.send({
-        type:
-          'conversation.unsubscribe',
-        conversationId
+        type: 'conversation.unsubscribe',
+        conversationId,
       })
     }
   }
 
-  sendMessage(
-    conversationId: string,
-    content: string,
-    clientMessageId: string
-  ): void {
+  sendMessage(conversationId: string, content: string, clientMessageId: string): void {
     this.send({
       type: 'message.send',
       conversationId,
       content,
-      clientMessageId
+      clientMessageId,
     })
   }
 
   private isConnected(): boolean {
-    return (
-      this.socket?.readyState ===
-      WebSocket.OPEN
-    )
+    return this.socket?.readyState === WebSocket.OPEN
   }
 
-  private send(
-    message: ClientMessage
-  ): void {
+  private send(message: ClientMessage): void {
     if (!this.isConnected()) {
-      throw new Error(
-        'WebSocket is not connected'
-      )
+      throw new Error('WebSocket is not connected')
     }
 
-    this.socket!.send(
-      JSON.stringify(message)
-    )
+    this.socket!.send(JSON.stringify(message))
   }
 
   private resubscribe(): void {
-    for (const conversationId of this
-      .subscribedConversations) {
+    for (const conversationId of this.subscribedConversations) {
       this.send({
-        type:
-          'conversation.subscribe',
-        conversationId
+        type: 'conversation.subscribe',
+        conversationId,
       })
     }
   }
@@ -278,18 +197,16 @@ export class ChatWebSocketClient {
     this.clearReconnectTimer()
 
     const delay = Math.min(
-      INITIAL_RECONNECT_DELAY *
-        2 ** this.reconnectAttempt,
-      MAX_RECONNECT_DELAY
+      INITIAL_RECONNECT_DELAY * 2 ** this.reconnectAttempt,
+      MAX_RECONNECT_DELAY,
     )
 
     this.reconnectAttempt += 1
 
-    this.reconnectTimer =
-      setTimeout(() => {
-        this.reconnectTimer = null
-        this.connect()
-      }, delay)
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
+      this.connect()
+    }, delay)
   }
 
   private clearReconnectTimer(): void {
@@ -297,9 +214,7 @@ export class ChatWebSocketClient {
       return
     }
 
-    clearTimeout(
-      this.reconnectTimer
-    )
+    clearTimeout(this.reconnectTimer)
 
     this.reconnectTimer = null
   }

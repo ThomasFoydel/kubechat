@@ -8,9 +8,7 @@ interface TopNavProps {
   onOpenSidebar: () => void
 }
 
-export function TopNav({
-  onOpenSidebar
-}: TopNavProps) {
+export function TopNav({ onOpenSidebar }: TopNavProps) {
   const { user } = useAuth()
 
   return (
@@ -26,15 +24,9 @@ export function TopNav({
         </button>
 
         <div>
-          <h1 className="text-sm font-semibold">
-            KubeChat
-          </h1>
+          <h1 className="text-sm font-semibold">KubeChat</h1>
 
-          {user && (
-            <p className="text-xs text-muted-foreground">
-              {user.username}
-            </p>
-          )}
+          {user && <p className="text-xs text-muted-foreground">{user.username}</p>}
         </div>
       </div>
     </header>

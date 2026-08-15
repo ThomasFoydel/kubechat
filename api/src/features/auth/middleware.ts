@@ -8,13 +8,13 @@ export interface AuthenticatedRequest extends Request {
 export async function requireAuth(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   const sessionId = req.cookies.kubechat_session
 
   if (!sessionId) {
     res.status(401).json({
-      message: 'Authentication required'
+      message: 'Authentication required',
     })
     return
   }
@@ -23,7 +23,7 @@ export async function requireAuth(
 
   if (!userId) {
     res.status(401).json({
-      message: 'Invalid or expired session'
+      message: 'Invalid or expired session',
     })
     return
   }
