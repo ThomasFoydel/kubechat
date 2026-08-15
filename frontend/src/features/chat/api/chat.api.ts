@@ -2,8 +2,8 @@ import { apiClient } from '@/lib/api-client'
 
 import type {
   Conversation,
-  ConversationVisibility,
-  Message
+  Message,
+  ConversationVisibility
 } from '../types/conversation.types'
 
 interface GraphQLResponse<T> {
@@ -35,7 +35,7 @@ async function graphqlRequest<T>(
   ) {
     throw new Error(
       response.errors[0]?.message ??
-      'GraphQL request failed'
+        'GraphQL request failed'
     )
   }
 
@@ -60,6 +60,7 @@ export async function getConversations(): Promise<
           id
           title
           visibility
+          isAdmin
           createdAt
           updatedAt
         }
@@ -71,7 +72,7 @@ export async function getConversations(): Promise<
 
 export async function createConversation(
   title?: string,
-  visibility: ConversationVisibility = 'PRIVATE'
+  visibility?: ConversationVisibility
 ): Promise<Conversation> {
   const response =
     await graphqlRequest<{
@@ -87,6 +88,7 @@ export async function createConversation(
             id
             title
             visibility
+            isAdmin
             createdAt
             updatedAt
           }
@@ -101,6 +103,28 @@ export async function createConversation(
     )
 
   return response.createConversation
+}
+
+export async function deleteConversation(
+  conversationId: string
+): Promise<boolean> {
+  const response =
+    await graphqlRequest<{
+      deleteConversation: boolean
+    }>(
+      `
+        mutation DeleteConversation(
+          $id: ID!
+        ) {
+          deleteConversation(id: $id)
+        }
+      `,
+      {
+        id: conversationId
+      }
+    )
+
+  return response.deleteConversation
 }
 
 export async function getMessages(

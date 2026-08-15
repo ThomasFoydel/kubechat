@@ -8,6 +8,7 @@ export interface Conversation {
   visibility: ConversationVisibility
   createdAt: string
   updatedAt: string
+  isAdmin: boolean
 }
 
 export interface Message {

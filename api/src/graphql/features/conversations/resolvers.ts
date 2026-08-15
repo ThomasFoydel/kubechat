@@ -1,19 +1,39 @@
 import { conversationService } from '../../../features/conversations/service'
 import { messageService } from '../../../features/messages/service'
 import { GraphQLContext } from '../../context'
-import { ConversationResolvers, MutationResolvers } from '../../generated/types'
+import {
+  ConversationResolvers,
+  MutationResolvers
+} from '../../generated/types'
 
 export const conversationFieldResolvers: Pick<
   ConversationResolvers<GraphQLContext>,
-  'messages'
+  'messages' | 'isAdmin'
 > = {
+  isAdmin: async (
+    parent,
+    _args,
+    context
+  ) => {
+    if (!context.userId) {
+      return false
+    }
+
+    return conversationService.isAdmin(
+      parent.id,
+      context.userId
+    )
+  },
+
   messages: async (
     parent,
     _args,
     context
   ) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw new Error(
+        'Authentication required'
+      )
     }
 
     const canAccess =
@@ -46,15 +66,20 @@ export const conversationMutationResolvers: Pick<
     context
   ) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw new Error(
+        'Authentication required'
+      )
     }
 
     return conversationService.createConversation(
       context.userId,
       {
-        title: args.input.title ?? undefined,
+        title:
+          args.input.title ??
+          undefined,
         visibility:
-          args.input.visibility ?? undefined
+          args.input.visibility ??
+          undefined
       }
     )
   },
@@ -65,16 +90,21 @@ export const conversationMutationResolvers: Pick<
     context
   ) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw new Error(
+        'Authentication required'
+      )
     }
 
     return conversationService.updateConversation(
       args.id,
       context.userId,
       {
-        title: args.input.title ?? undefined,
+        title:
+          args.input.title ??
+          undefined,
         visibility:
-          args.input.visibility ?? undefined
+          args.input.visibility ??
+          undefined
       }
     )
   },
@@ -85,7 +115,9 @@ export const conversationMutationResolvers: Pick<
     context
   ) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw new Error(
+        'Authentication required'
+      )
     }
 
     await conversationService.deleteConversation(
