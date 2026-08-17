@@ -22,8 +22,8 @@ const navigation = [
     icon: Activity,
   },
   {
-    name: 'Messages',
-    href: '/messages',
+    name: 'Chat',
+    href: '/chat',
     icon: MessageSquare,
   },
   {
@@ -53,6 +53,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const currentConversation = conversations.find(
     (conversation) => conversation.id === currentConversationId,
   )
+
+  const isChatRoute = pathname === '/chat' || pathname.startsWith('/chat/')
 
   async function handleLogout() {
     await logout()
@@ -123,13 +125,28 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <nav className="space-y-1 p-4">
             {navigation.map((item) => {
               const Icon = item.icon
+              const isActive =
+                item.href === '/chat'
+                  ? isChatRoute
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`)
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={onClose}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition hover:bg-muted"
+                  onClick={(event) => {
+                    if (item.href === '/chat' && isChatRoute) {
+                      event.preventDefault()
+                      return
+                    }
+
+                    onClose()
+                  }}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                    isActive
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}

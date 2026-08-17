@@ -2,10 +2,12 @@ import { Request, Response } from 'express'
 
 const SESSION_COOKIE = 'kubechat_session'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 const sessionCookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: 'none' as const,
+  secure: isProduction,
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
   maxAge: 1000 * 60 * 60 * 24 * 7,
   path: '/',
 }

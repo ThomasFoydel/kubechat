@@ -1,11 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-
-import { ChatWebSocketClient, type WebSocketConnectionStatus } from '../api/chat-websocket.client'
-
+import { useEffect, useRef } from 'react'
+import type { WebSocketConnectionStatus } from '../api/chat-websocket.client'
 import { getMessages } from '../api/chat.api'
-
+import { useChatContext } from '../context/ChatProvider'
 import type { Message } from '../types/conversation.types'
 
 export interface UseChatResult {
@@ -16,14 +14,16 @@ export interface UseChatResult {
 }
 
 export function useChat(conversationId: string | null): UseChatResult {
-  const [messages, setMessages] = useState<Message[]>([])
-
-  const [connectionStatus, setConnectionStatus] =
-    useState<WebSocketConnectionStatus>('disconnected')
-
-  const [sendError, setSendError] = useState<string | null>(null)
-
-  const clientRef = useRef<ChatWebSocketClient | null>(null)
+  const {
+    messages,
+    connectionStatus,
+    sendMessage: sendChatMessage,
+    sendError,
+    subscribe,
+    unsubscribe,
+    setMessages,
+    clearSendError,
+  } = useChatContext()
 
   const conversationIdRef = useRef<string | null>(conversationId)
 
@@ -34,7 +34,7 @@ export function useChat(conversationId: string | null): UseChatResult {
   useEffect(() => {
     if (!conversationId) {
       setMessages([])
-      setSendError(null)
+      clearSendError()
 
       return
     }
@@ -42,12 +42,14 @@ export function useChat(conversationId: string | null): UseChatResult {
     let cancelled = false
 
     setMessages([])
-    setSendError(null)
+    clearSendError()
+
+    subscribe(conversationId)
 
     getMessages(conversationId)
-      .then((messages) => {
+      .then((loadedMessages) => {
         if (!cancelled) {
-          setMessages(messages)
+          setMessages(loadedMessages)
         }
       })
       .catch((error) => {
@@ -58,108 +60,20 @@ export function useChat(conversationId: string | null): UseChatResult {
 
     return () => {
       cancelled = true
+
+      unsubscribe(conversationId)
     }
-  }, [conversationId])
+  }, [conversationId, subscribe, unsubscribe, setMessages, clearSendError])
 
-  useEffect(() => {
-    const client = new ChatWebSocketClient({
-      onMessage: (message) => {
-        if (message.type === 'message.created') {
-          if (message.message.conversationId !== conversationIdRef.current) {
-            return
-          }
+  function sendMessage(content: string): boolean {
+    const activeConversationId = conversationIdRef.current
 
-          setSendError(null)
-
-          setMessages((current) => {
-            const exists = current.some((existing) => existing.id === message.message.id)
-
-            if (exists) {
-              return current
-            }
-
-            return [...current, message.message]
-          })
-        }
-
-        if (message.type === 'error') {
-          if (message.clientMessageId) {
-            setSendError(message.message)
-          }
-
-          console.error('WebSocket error:', message.code, message.message)
-        }
-      },
-
-      onStatusChange: setConnectionStatus,
-    })
-
-    clientRef.current = client
-
-    client.connect()
-
-    return () => {
-      client.disconnect()
-      clientRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    const client = clientRef.current
-
-    if (!client || !conversationId) {
-      return
+    if (!activeConversationId) {
+      return false
     }
 
-    client.subscribe(conversationId)
-
-    return () => {
-      client.unsubscribe(conversationId)
-    }
-  }, [conversationId])
-
-  const sendMessage = useCallback(
-    (content: string): boolean => {
-      const activeConversationId = conversationIdRef.current
-
-      if (!activeConversationId) {
-        setSendError('No conversation is selected.')
-
-        return false
-      }
-
-      const client = clientRef.current
-
-      if (!client) {
-        setSendError('Chat connection is not ready.')
-
-        return false
-      }
-
-      if (connectionStatus !== 'connected') {
-        setSendError('Chat connection is not ready.')
-
-        return false
-      }
-
-      const clientMessageId = crypto.randomUUID()
-
-      setSendError(null)
-
-      try {
-        client.sendMessage(activeConversationId, content, clientMessageId)
-
-        return true
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to send message'
-
-        setSendError(message)
-
-        return false
-      }
-    },
-    [connectionStatus],
-  )
+    return sendChatMessage(activeConversationId, content)
+  }
 
   return {
     messages,

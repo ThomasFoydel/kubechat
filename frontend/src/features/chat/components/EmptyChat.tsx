@@ -5,11 +5,7 @@ export function EmptyChat() {
     <div className="text-center">
       <MessageSquare size={32} className="mx-auto mb-3 text-muted-foreground" />
 
-      <p className="text-sm text-muted-foreground">No messages yet</p>
-
-      <p className="mt-1 text-xs text-muted-foreground/70">
-        Send a message to start the conversation.
-      </p>
+      <p className="text-sm text-muted-foreground">Select a conversation</p>
     </div>
   )
 }

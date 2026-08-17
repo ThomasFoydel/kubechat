@@ -1,20 +1,29 @@
 'use client'
 
 import { Trash2 } from 'lucide-react'
+
 import { useRouter } from 'next/navigation'
+
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 
 import { useChat } from '../hooks/useChat'
+
 import { useConversations } from '../hooks/useConversations'
+
 import type { ConversationVisibility } from '../types/conversation.types'
 
 import { ChatSidebar } from './ChatSidebar'
+
 import { ConfirmationDialog } from './ConfirmationDialog'
+
 import { EmptyChat } from './EmptyChat'
+
 import { MessageComposer } from './MessageComposer'
+
 import { MessageList } from './MessageList'
+
 import { NewConversationDialog } from './NewConversationDialog'
 
 interface ChatPageProps {
@@ -45,15 +54,11 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     (conversation) => conversation.id === conversationId,
   )
 
-  function handleNewChat() {
+  async function handleCreateConversation(title: string, visibility: ConversationVisibility) {
     if (isCreating) {
       return
     }
 
-    setIsNewConversationDialogOpen(true)
-  }
-
-  async function handleCreateConversation(title: string, visibility: ConversationVisibility) {
     try {
       const conversation = await createConversation(title, visibility)
 
@@ -99,8 +104,6 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
 
   const hasConversation = Boolean(conversationId)
 
-  const isConnected = connectionStatus === 'connected'
-
   return (
     <>
       <div className="flex h-full min-h-0 bg-background text-foreground">
@@ -108,7 +111,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
           conversations={conversations}
           selectedConversationId={conversationId || null}
           selectedConversation={currentConversation ?? null}
-          onNewChat={handleNewChat}
+          onNewChat={() => setIsNewConversationDialogOpen(true)}
           isCreating={isCreating}
           isLoading={isLoadingConversations}
         />
@@ -172,7 +175,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
             message={message}
             onMessageChange={setMessage}
             onSubmit={handleSubmit}
-            disabled={!conversationId || !isConnected}
+            disabled={!conversationId || connectionStatus !== 'connected'}
             error={sendError}
           />
         </section>
