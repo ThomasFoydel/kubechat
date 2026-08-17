@@ -76,13 +76,19 @@ export class ChatWebSocketClient {
 
     this.manuallyClosed = false
 
-    this.options.onStatusChange(this.reconnectAttempt > 0 ? 'reconnecting' : 'connecting')
+    const isReconnect = this.reconnectAttempt > 0
+
+    this.options.onStatusChange(isReconnect ? 'reconnecting' : 'connecting')
 
     const socket = new WebSocket(getWebSocketUrl())
 
     this.socket = socket
 
     socket.addEventListener('open', () => {
+      if (this.socket !== socket) {
+        return
+      }
+
       this.reconnectAttempt = 0
 
       this.options.onStatusChange('connected')
@@ -91,6 +97,10 @@ export class ChatWebSocketClient {
     })
 
     socket.addEventListener('message', (event) => {
+      if (this.socket !== socket) {
+        return
+      }
+
       const message = parseServerMessage(String(event.data))
 
       if (!message) {
@@ -102,14 +112,20 @@ export class ChatWebSocketClient {
       this.options.onMessage(message)
     })
 
-    socket.addEventListener('error', () => {
-      this.options.onStatusChange('error')
+    socket.addEventListener('error', (event) => {
+      if (this.socket !== socket || this.manuallyClosed) {
+        return
+      }
+
+      console.warn('WebSocket connection error', event)
     })
 
     socket.addEventListener('close', () => {
-      if (this.socket === socket) {
-        this.socket = null
+      if (this.socket !== socket) {
+        return
       }
+
+      this.socket = null
 
       if (this.manuallyClosed) {
         this.options.onStatusChange('disconnected')
@@ -130,7 +146,7 @@ export class ChatWebSocketClient {
 
     this.socket = null
 
-    if (socket) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
       socket.close()
     }
 
@@ -203,8 +219,11 @@ export class ChatWebSocketClient {
 
     this.reconnectAttempt += 1
 
+    this.options.onStatusChange('reconnecting')
+
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null
+
       this.connect()
     }, delay)
   }

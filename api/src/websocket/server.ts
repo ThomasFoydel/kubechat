@@ -159,7 +159,9 @@ async function handleMessage(
 }
 
 async function authenticate(request: IncomingMessage): Promise<string | null> {
-  return getUserIdFromCookieHeader(request.headers.cookie)
+  const userId = await getUserIdFromCookieHeader(request.headers.cookie)
+
+  return userId
 }
 
 async function handleSocketClose(socket: WebSocket): Promise<void> {
