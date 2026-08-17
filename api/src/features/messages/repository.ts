@@ -1,6 +1,8 @@
 import { Message } from '../../../generated/prisma'
 import { prisma } from '../../db/prisma'
 
+const MESSAGE_LOAD_LIMIT = 100
+
 async function createMessage(
   conversationId: string,
   userId: string,
@@ -16,14 +18,17 @@ async function createMessage(
 }
 
 async function getMessagesByConversationId(conversationId: string): Promise<Message[]> {
-  return prisma.message.findMany({
+  const messages = await prisma.message.findMany({
     where: {
       conversationId,
     },
     orderBy: {
-      createdAt: 'asc',
+      createdAt: 'desc',
     },
+    take: MESSAGE_LOAD_LIMIT,
   })
+
+  return messages.reverse()
 }
 
 async function getMessageById(id: string): Promise<Message | null> {
