@@ -1,30 +1,23 @@
 'use client'
 
 import { Trash2 } from 'lucide-react'
-
 import { useRouter } from 'next/navigation'
-
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 
 import { useChat } from '../hooks/useChat'
-
 import { useConversations } from '../hooks/useConversations'
 
 import type { ConversationVisibility } from '../types/conversation.types'
 
 import { ChatSidebar } from './ChatSidebar'
-
 import { ConfirmationDialog } from './ConfirmationDialog'
-
 import { EmptyChat } from './EmptyChat'
-
 import { MessageComposer } from './MessageComposer'
-
 import { MessageList } from './MessageList'
-
 import { NewConversationDialog } from './NewConversationDialog'
+import { PublicConversationDialog } from './PublicConversationDialog'
 
 interface ChatPageProps {
   conversationId?: string
@@ -37,6 +30,8 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
 
   const [isNewConversationDialogOpen, setIsNewConversationDialogOpen] = useState(false)
 
+  const [isPublicConversationDialogOpen, setIsPublicConversationDialogOpen] = useState(false)
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const {
@@ -44,6 +39,8 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     isLoading: isLoadingConversations,
     createConversation,
     isCreating,
+    joinConversation,
+    isJoining,
     deleteConversation,
     isDeleting,
   } = useConversations()
@@ -68,6 +65,14 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     } catch (error) {
       console.error('Failed to create conversation:', error)
     }
+  }
+
+  async function handleJoinConversation(conversationId: string) {
+    const conversation = await joinConversation(conversationId)
+
+    router.push(`/chat/${conversation.id}`)
+
+    return conversation
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -112,6 +117,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
           selectedConversationId={conversationId || null}
           selectedConversation={currentConversation ?? null}
           onNewChat={() => setIsNewConversationDialogOpen(true)}
+          onFindPublicChats={() => setIsPublicConversationDialogOpen(true)}
           isCreating={isCreating}
           isLoading={isLoadingConversations}
         />
@@ -186,6 +192,13 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
         onClose={() => setIsNewConversationDialogOpen(false)}
         onSubmit={handleCreateConversation}
         isCreating={isCreating}
+      />
+
+      <PublicConversationDialog
+        open={isPublicConversationDialogOpen}
+        onClose={() => setIsPublicConversationDialogOpen(false)}
+        onJoin={handleJoinConversation}
+        isJoining={isJoining}
       />
 
       <ConfirmationDialog

@@ -17,6 +17,19 @@ function toConversationResponse(
   }
 }
 
+function mapConversationResponse(
+  conversation: Awaited<ReturnType<typeof conversationRepository.getConversationById>> &
+    object,
+): ConversationResponse {
+  return {
+    id: conversation.id,
+    title: conversation.title,
+    visibility: conversation.visibility,
+    createdAt: conversation.createdAt.toISOString(),
+    updatedAt: conversation.updatedAt.toISOString(),
+  }
+}
+
 async function createConversation(
   userId: string,
   input: CreateConversationInput,
@@ -27,13 +40,7 @@ async function createConversation(
     input.visibility ?? 'PRIVATE',
   )
 
-  return {
-    id: conversation.id,
-    title: conversation.title,
-    visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString(),
-  }
+  return mapConversationResponse(conversation)
 }
 
 async function getConversationById(id: string): Promise<ConversationResponse | null> {
@@ -45,13 +52,13 @@ async function getConversationById(id: string): Promise<ConversationResponse | n
 async function getUserConversations(userId: string): Promise<ConversationResponse[]> {
   const conversations = await conversationRepository.getConversationsByUserId(userId)
 
-  return conversations.map((conversation) => ({
-    id: conversation.id,
-    title: conversation.title,
-    visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString(),
-  }))
+  return conversations.map(mapConversationResponse)
+}
+
+async function getPublicConversations(search?: string): Promise<ConversationResponse[]> {
+  const conversations = await conversationRepository.getPublicConversations(search?.trim() || undefined)
+
+  return conversations.map(mapConversationResponse)
 }
 
 async function updateConversation(
@@ -71,13 +78,7 @@ async function updateConversation(
     input.visibility,
   )
 
-  return {
-    id: conversation.id,
-    title: conversation.title,
-    visibility: conversation.visibility,
-    createdAt: conversation.createdAt.toISOString(),
-    updatedAt: conversation.updatedAt.toISOString(),
-  }
+  return mapConversationResponse(conversation)
 }
 
 async function deleteConversation(id: string, userId: string): Promise<void> {
@@ -88,6 +89,25 @@ async function deleteConversation(id: string, userId: string): Promise<void> {
   }
 
   await conversationRepository.deleteConversation(id)
+}
+
+async function joinConversation(
+  id: string,
+  userId: string,
+): Promise<ConversationResponse> {
+  const conversation = await conversationRepository.getConversationById(id)
+
+  if (!conversation) {
+    throw new Error('Conversation not found')
+  }
+
+  if (conversation.visibility !== 'PUBLIC') {
+    throw new Error('You can only join public conversations')
+  }
+
+  await conversationRepository.addMember(id, userId)
+
+  return mapConversationResponse(conversation)
 }
 
 async function canAccessConversation(id: string, userId: string): Promise<boolean> {
@@ -112,8 +132,10 @@ export const conversationService = {
   createConversation,
   getConversationById,
   getUserConversations,
+  getPublicConversations,
   updateConversation,
   deleteConversation,
+  joinConversation,
   canAccessConversation,
   isAdmin,
 }

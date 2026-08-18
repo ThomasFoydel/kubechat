@@ -2,7 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { createConversation, deleteConversation, getConversations } from '../api/chat.api'
+import {
+  createConversation,
+  deleteConversation,
+  getConversations,
+  joinConversation,
+} from '../api/chat.api'
 
 import type { ConversationVisibility } from '../types/conversation.types'
 
@@ -17,8 +22,13 @@ export function useConversations() {
   })
 
   const createMutation = useMutation({
-    mutationFn: ({ title, visibility }: { title?: string; visibility?: ConversationVisibility }) =>
-      createConversation(title, visibility),
+    mutationFn: ({
+      title,
+      visibility,
+    }: {
+      title?: string
+      visibility?: ConversationVisibility
+    }) => createConversation(title, visibility),
 
     onSuccess: (conversation) => {
       queryClient.setQueryData(
@@ -31,6 +41,25 @@ export function useConversations() {
     },
   })
 
+  const joinMutation = useMutation({
+    mutationFn: joinConversation,
+
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(
+        CONVERSATIONS_QUERY_KEY,
+        (current: Awaited<ReturnType<typeof getConversations>> | undefined) => {
+          const conversations = current ?? []
+
+          if (conversations.some((item) => item.id === conversation.id)) {
+            return conversations
+          }
+
+          return [conversation, ...conversations]
+        },
+      )
+    },
+  })
+
   const deleteMutation = useMutation({
     mutationFn: deleteConversation,
 
@@ -38,16 +67,25 @@ export function useConversations() {
       queryClient.setQueryData(
         CONVERSATIONS_QUERY_KEY,
         (current: Awaited<ReturnType<typeof getConversations>> | undefined) =>
-          (current ?? []).filter((conversation) => conversation.id !== conversationId),
+          (current ?? []).filter(
+            (conversation) => conversation.id !== conversationId,
+          ),
       )
     },
   })
 
-  async function handleCreateConversation(title?: string, visibility?: ConversationVisibility) {
+  async function handleCreateConversation(
+    title?: string,
+    visibility?: ConversationVisibility,
+  ) {
     return createMutation.mutateAsync({
       title,
       visibility,
     })
+  }
+
+  async function handleJoinConversation(conversationId: string) {
+    return joinMutation.mutateAsync(conversationId)
   }
 
   async function handleDeleteConversation(conversationId: string) {
@@ -64,6 +102,12 @@ export function useConversations() {
     createConversation: handleCreateConversation,
 
     isCreating: createMutation.isPending,
+
+    joinConversation: handleJoinConversation,
+
+    isJoining: joinMutation.isPending,
+
+    joinError: joinMutation.error,
 
     deleteConversation: handleDeleteConversation,
 

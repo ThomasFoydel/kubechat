@@ -43,6 +43,26 @@ async function getConversationsByUserId(userId: string): Promise<Conversation[]>
   })
 }
 
+async function getPublicConversations(search?: string): Promise<Conversation[]> {
+  return prisma.conversation.findMany({
+    where: {
+      visibility: 'PUBLIC',
+      ...(search
+        ? {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          }
+        : {}),
+    },
+    orderBy: {
+      updatedAt: 'desc',
+    },
+    take: 50,
+  })
+}
+
 async function isMember(conversationId: string, userId: string): Promise<boolean> {
   const membership = await prisma.conversationMember.findUnique({
     where: {
@@ -54,6 +74,23 @@ async function isMember(conversationId: string, userId: string): Promise<boolean
   })
 
   return membership !== null
+}
+
+async function addMember(conversationId: string, userId: string): Promise<void> {
+  await prisma.conversationMember.upsert({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
+      },
+    },
+    update: {},
+    create: {
+      conversationId,
+      userId,
+      role: 'MEMBER',
+    },
+  })
 }
 
 async function isAdmin(conversationId: string, userId: string): Promise<boolean> {
@@ -97,7 +134,9 @@ export const conversationRepository = {
   createConversation,
   getConversationById,
   getConversationsByUserId,
+  getPublicConversations,
   isMember,
+  addMember,
   isAdmin,
   updateConversation,
   deleteConversation,
