@@ -1,6 +1,7 @@
 type Query {
   me: User
   conversations: [Conversation!]!
+  publicConversations(search: String): [Conversation!]!
   conversation(id: ID!): Conversation
 }
 

@@ -20,6 +20,14 @@ export const queryResolvers: QueryResolvers<GraphQLContext> = {
     return conversationService.getUserConversations(context.userId)
   },
 
+  publicConversations: async (_parent, args, context) => {
+    if (!context.userId) {
+      throw new Error('Authentication required')
+    }
+
+    return conversationService.getPublicConversations(args.search ?? undefined)
+  },
+
   conversation: async (_parent, args, context) => {
     if (!context.userId) {
       throw new Error('Authentication required')

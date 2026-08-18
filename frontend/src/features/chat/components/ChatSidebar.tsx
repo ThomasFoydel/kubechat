@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageSquare, Plus } from 'lucide-react'
+import { MessageSquare, Plus, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import type { Conversation } from '../types/conversation.types'
@@ -10,6 +10,7 @@ interface ChatSidebarProps {
   selectedConversationId: string | null
   selectedConversation: Conversation | null
   onNewChat: () => void
+  onFindPublicChats: () => void
   isCreating: boolean
   isLoading: boolean
 }
@@ -19,6 +20,7 @@ export function ChatSidebar({
   selectedConversationId,
   selectedConversation,
   onNewChat,
+  onFindPublicChats,
   isCreating,
   isLoading,
 }: ChatSidebarProps) {
@@ -34,16 +36,26 @@ export function ChatSidebar({
         <h2 className="truncate text-sm font-semibold tracking-wide">Conversations</h2>
       </div>
 
-      <div className="shrink-0 p-3">
+      <div className="shrink-0 space-y-2 p-3">
         <button
           type="button"
           onClick={onNewChat}
           disabled={isCreating}
-          className="flex w-full items-center gap-2 rounded-lg border border-border bg-[#18181b] px-3 py-2.5 text-sm font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-[#18181b] px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus size={18} />
 
           {isCreating ? 'Creating...' : 'New chat'}
+        </button>
+
+        <button
+          type="button"
+          onClick={onFindPublicChats}
+          className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-[#18181b] px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/10"
+        >
+          <Search size={18} />
+
+          Find public chats
         </button>
       </div>
 
@@ -63,8 +75,10 @@ export function ChatSidebar({
                 key={conversation.id}
                 type="button"
                 onClick={() => handleSelect(conversation.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                  selectedConversationId === conversation.id ? 'bg-muted' : 'hover:bg-muted/50'
+                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                  selectedConversationId === conversation.id
+                    ? 'bg-muted'
+                    : 'hover:bg-white/10'
                 }`}
               >
                 <MessageSquare size={17} />

@@ -1,7 +1,10 @@
 import { conversationService } from '../../../features/conversations/service'
 import { messageService } from '../../../features/messages/service'
 import { GraphQLContext } from '../../context'
-import { ConversationResolvers, MutationResolvers } from '../../generated/types'
+import {
+  ConversationResolvers,
+  MutationResolvers,
+} from '../../generated/types'
 
 export const conversationFieldResolvers: Pick<
   ConversationResolvers<GraphQLContext>,
@@ -32,7 +35,7 @@ export const conversationFieldResolvers: Pick<
 
 export const conversationMutationResolvers: Pick<
   MutationResolvers<GraphQLContext>,
-  'createConversation' | 'updateConversation' | 'deleteConversation'
+  'createConversation' | 'updateConversation' | 'deleteConversation' | 'joinConversation'
 > = {
   createConversation: async (_parent, args, context) => {
     if (!context.userId) {
@@ -64,5 +67,13 @@ export const conversationMutationResolvers: Pick<
     await conversationService.deleteConversation(args.id, context.userId)
 
     return true
+  },
+
+  joinConversation: async (_parent, args, context) => {
+    if (!context.userId) {
+      throw new Error('Authentication required')
+    }
+
+    return conversationService.joinConversation(args.id, context.userId)
   },
 }

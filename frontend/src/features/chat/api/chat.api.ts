@@ -1,6 +1,10 @@
 import { apiClient } from '@/lib/api-client'
 
-import type { Conversation, Message, ConversationVisibility } from '../types/conversation.types'
+import type {
+  Conversation,
+  Message,
+  ConversationVisibility,
+} from '../types/conversation.types'
 
 interface GraphQLResponse<T> {
   data?: T
@@ -9,7 +13,10 @@ interface GraphQLResponse<T> {
   }>
 }
 
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+async function graphqlRequest<T>(
+  query: string,
+  variables?: Record<string, unknown>,
+): Promise<T> {
   const response = await apiClient<GraphQLResponse<T>>('/graphql', {
     method: 'POST',
     body: JSON.stringify({
@@ -33,8 +40,30 @@ export async function getConversations(): Promise<Conversation[]> {
   const response = await graphqlRequest<{
     conversations: Conversation[]
   }>(`
-      query GetConversations {
-        conversations {
+    query GetConversations {
+      conversations {
+        id
+        title
+        visibility
+        isAdmin
+        createdAt
+        updatedAt
+      }
+    }
+  `)
+
+  return response.conversations
+}
+
+export async function getPublicConversations(
+  search?: string,
+): Promise<Conversation[]> {
+  const response = await graphqlRequest<{
+    publicConversations: Conversation[]
+  }>(
+    `
+      query GetPublicConversations($search: String) {
+        publicConversations(search: $search) {
           id
           title
           visibility
@@ -43,9 +72,13 @@ export async function getConversations(): Promise<Conversation[]> {
           updatedAt
         }
       }
-    `)
+    `,
+    {
+      search: search?.trim() || undefined,
+    },
+  )
 
-  return response.conversations
+  return response.publicConversations
 }
 
 export async function createConversation(
@@ -56,21 +89,21 @@ export async function createConversation(
     createConversation: Conversation
   }>(
     `
-        mutation CreateConversation(
-          $input: CreateConversationInput!
+      mutation CreateConversation(
+        $input: CreateConversationInput!
+      ) {
+        createConversation(
+          input: $input
         ) {
-          createConversation(
-            input: $input
-          ) {
-            id
-            title
-            visibility
-            isAdmin
-            createdAt
-            updatedAt
-          }
+          id
+          title
+          visibility
+          isAdmin
+          createdAt
+          updatedAt
         }
-      `,
+      }
+    `,
     {
       input: {
         title,
@@ -82,17 +115,45 @@ export async function createConversation(
   return response.createConversation
 }
 
-export async function deleteConversation(conversationId: string): Promise<boolean> {
+export async function joinConversation(
+  conversationId: string,
+): Promise<Conversation> {
+  const response = await graphqlRequest<{
+    joinConversation: Conversation
+  }>(
+    `
+      mutation JoinConversation($id: ID!) {
+        joinConversation(id: $id) {
+          id
+          title
+          visibility
+          isAdmin
+          createdAt
+          updatedAt
+        }
+      }
+    `,
+    {
+      id: conversationId,
+    },
+  )
+
+  return response.joinConversation
+}
+
+export async function deleteConversation(
+  conversationId: string,
+): Promise<boolean> {
   const response = await graphqlRequest<{
     deleteConversation: boolean
   }>(
     `
-        mutation DeleteConversation(
-          $id: ID!
-        ) {
-          deleteConversation(id: $id)
-        }
-      `,
+      mutation DeleteConversation(
+        $id: ID!
+      ) {
+        deleteConversation(id: $id)
+      }
+    `,
     {
       id: conversationId,
     },
@@ -101,28 +162,30 @@ export async function deleteConversation(conversationId: string): Promise<boolea
   return response.deleteConversation
 }
 
-export async function getMessages(conversationId: string): Promise<Message[]> {
+export async function getMessages(
+  conversationId: string,
+): Promise<Message[]> {
   const response = await graphqlRequest<{
     conversation: {
       messages: Message[]
     } | null
   }>(
     `
-        query GetConversation(
-          $id: ID!
-        ) {
-          conversation(id: $id) {
+      query GetConversation(
+        $id: ID!
+      ) {
+        conversation(id: $id) {
+          id
+          messages {
             id
-            messages {
-              id
-              content
-              createdAt
-              userId
-              conversationId
-            }
+            content
+            createdAt
+            userId
+            conversationId
           }
         }
-      `,
+      }
+    `,
     {
       id: conversationId,
     },
