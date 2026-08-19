@@ -1,4 +1,4 @@
-name: Deploy API to OKE
+name: Deploy to OKE
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy API
+    name: Deploy to OKE
     runs-on: ubuntu-latest
 
     env:
@@ -73,3 +73,10 @@ jobs:
             api=ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
 
           kubectl rollout status deployment/kubechat-api
+
+      - name: Deploy frontend
+        run: |
+          kubectl set image deployment/kubechat-frontend \
+            frontend=ghcr.io/thomasfoydel/kubechat-frontend:${{ github.sha }}
+
+          kubectl rollout status deployment/kubechat-frontend
