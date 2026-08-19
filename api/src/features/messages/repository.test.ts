@@ -17,13 +17,16 @@ describe('messageRepository', () => {
   })
 
   describe('getMessagesByConversationId', () => {
-    it('loads at most the 100 most recent messages', async () => {
+    it('loads at most the 100 most recent messages with usernames', async () => {
       const messages = Array.from({ length: 100 }, (_, index) => ({
         id: `message-${index}`,
         content: `Message ${index}`,
         createdAt: new Date(2026, 0, index + 1),
         conversationId: 'conversation-123',
         userId: 'user-123',
+        user: {
+          username: 'testuser',
+        },
       }))
 
       vi.mocked(prisma.message.findMany).mockResolvedValue(messages as never)
@@ -38,6 +41,18 @@ describe('messageRepository', () => {
           createdAt: 'desc',
         },
         take: 100,
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          userId: true,
+          conversationId: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+        },
       })
 
       expect(result).toHaveLength(100)
@@ -51,6 +66,9 @@ describe('messageRepository', () => {
           createdAt: new Date('2026-01-03'),
           conversationId: 'conversation-123',
           userId: 'user-123',
+          user: {
+            username: 'testuser',
+          },
         },
         {
           id: 'message-2',
@@ -58,6 +76,9 @@ describe('messageRepository', () => {
           createdAt: new Date('2026-01-02'),
           conversationId: 'conversation-123',
           userId: 'user-123',
+          user: {
+            username: 'testuser',
+          },
         },
         {
           id: 'message-1',
@@ -65,6 +86,9 @@ describe('messageRepository', () => {
           createdAt: new Date('2026-01-01'),
           conversationId: 'conversation-123',
           userId: 'user-123',
+          user: {
+            username: 'testuser',
+          },
         },
       ]
 
@@ -83,6 +107,9 @@ describe('messageRepository', () => {
           createdAt: new Date('2026-01-01'),
           conversationId: 'conversation-123',
           userId: 'user-123',
+          user: {
+            username: 'testuser',
+          },
         },
       ]
 

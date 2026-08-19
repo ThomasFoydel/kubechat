@@ -60,7 +60,7 @@ export function MessageList({ messages }: MessageListProps) {
               }`}
             >
               {!isOwnMessage && (
-                <p className="mb-1 text-xs font-medium text-muted-foreground">{message.userId}</p>
+                <p className="mb-1 text-xs font-medium text-muted-foreground">{message.username}</p>
               )}
 
               <p className="whitespace-pre-wrap text-sm">{message.content}</p>

@@ -3,5 +3,6 @@ type Message {
   content: String!
   createdAt: String!
   userId: ID!
+  username: String!
   conversationId: ID!
 }

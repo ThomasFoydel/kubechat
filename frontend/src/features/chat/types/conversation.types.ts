@@ -14,5 +14,6 @@ export interface Message {
   content: string
   createdAt: string
   userId: string
+  username: string
   conversationId: string
 }

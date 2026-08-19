@@ -115,7 +115,6 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
         <ChatSidebar
           conversations={conversations}
           selectedConversationId={conversationId || null}
-          selectedConversation={currentConversation ?? null}
           onNewChat={() => setIsNewConversationDialogOpen(true)}
           onFindPublicChats={() => setIsPublicConversationDialogOpen(true)}
           isCreating={isCreating}

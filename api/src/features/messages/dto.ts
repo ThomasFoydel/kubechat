@@ -3,6 +3,7 @@ export interface MessageResponse {
   content: string
   createdAt: string
   userId: string
+  username: string
   conversationId: string
 }
 

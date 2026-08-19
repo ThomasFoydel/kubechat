@@ -3,21 +3,41 @@ import { prisma } from '../../db/prisma'
 
 const MESSAGE_LOAD_LIMIT = 100
 
+const messageWithUserSelect = {
+  id: true,
+  content: true,
+  createdAt: true,
+  userId: true,
+  conversationId: true,
+  user: {
+    select: {
+      username: true,
+    },
+  },
+} as const
+
+type MessageWithUser = Message & {
+  user: {
+    username: string
+  }
+}
+
 async function createMessage(
   conversationId: string,
   userId: string,
   content: string,
-): Promise<Message> {
+): Promise<MessageWithUser> {
   return prisma.message.create({
     data: {
       conversationId,
       userId,
       content,
     },
+    select: messageWithUserSelect,
   })
 }
 
-async function getMessagesByConversationId(conversationId: string): Promise<Message[]> {
+async function getMessagesByConversationId(conversationId: string): Promise<MessageWithUser[]> {
   const messages = await prisma.message.findMany({
     where: {
       conversationId,
@@ -26,16 +46,18 @@ async function getMessagesByConversationId(conversationId: string): Promise<Mess
       createdAt: 'desc',
     },
     take: MESSAGE_LOAD_LIMIT,
+    select: messageWithUserSelect,
   })
 
   return messages.reverse()
 }
 
-async function getMessageById(id: string): Promise<Message | null> {
+async function getMessageById(id: string): Promise<MessageWithUser | null> {
   return prisma.message.findUnique({
     where: {
       id,
     },
+    select: messageWithUserSelect,
   })
 }
 

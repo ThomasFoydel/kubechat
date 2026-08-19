@@ -125,6 +125,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <nav className="space-y-1 p-4">
             {navigation.map((item) => {
               const Icon = item.icon
+
               const isActive =
                 item.href === '/chat'
                   ? isChatRoute
@@ -142,13 +143,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
                     onClose()
                   }}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
                     isActive
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-muted font-medium text-foreground'
+                      : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
+
                   {item.name}
                 </Link>
               )
@@ -179,20 +182,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </div>
 
             <div className="space-y-1">
-              {conversations.map((conversation) => (
-                <button
-                  key={conversation.id}
-                  type="button"
-                  onClick={() => handleConversationSelect(conversation.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                    currentConversationId === conversation.id ? 'bg-muted' : 'hover:bg-muted/50'
-                  }`}
-                >
-                  <MessageSquare size={17} />
+              {conversations.map((conversation) => {
+                const isSelected = currentConversationId === conversation.id
 
-                  <span className="truncate">{conversation.title ?? 'New conversation'}</span>
-                </button>
-              ))}
+                return (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => handleConversationSelect(conversation.id)}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                      isSelected ? 'bg-muted' : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    <MessageSquare size={17} fill={isSelected ? 'currentColor' : 'none'} />
+
+                    <span className="truncate">{conversation.title ?? 'New conversation'}</span>
+                  </button>
+                )
+              })}
 
               {conversations.length === 0 && (
                 <p className="px-2 py-2 text-xs text-muted-foreground">No conversations yet.</p>
