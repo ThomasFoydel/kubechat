@@ -8,7 +8,6 @@ import type { Conversation } from '../types/conversation.types'
 interface ChatSidebarProps {
   conversations: Conversation[]
   selectedConversationId: string | null
-  selectedConversation: Conversation | null
   onNewChat: () => void
   onFindPublicChats: () => void
   isCreating: boolean
@@ -18,7 +17,6 @@ interface ChatSidebarProps {
 export function ChatSidebar({
   conversations,
   selectedConversationId,
-  selectedConversation,
   onNewChat,
   onFindPublicChats,
   isCreating,
@@ -54,7 +52,6 @@ export function ChatSidebar({
           className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-[#18181b] px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/10"
         >
           <Search size={18} />
-
           Find public chats
         </button>
       </div>
@@ -70,22 +67,24 @@ export function ChatSidebar({
           <p className="px-2 py-2 text-xs text-muted-foreground">No conversations yet.</p>
         ) : (
           <div className="space-y-1">
-            {conversations.map((conversation) => (
-              <button
-                key={conversation.id}
-                type="button"
-                onClick={() => handleSelect(conversation.id)}
-                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-                  selectedConversationId === conversation.id
-                    ? 'bg-muted'
-                    : 'hover:bg-white/10'
-                }`}
-              >
-                <MessageSquare size={17} />
+            {conversations.map((conversation) => {
+              const isSelected = selectedConversationId === conversation.id
 
-                <span className="truncate">{conversation.title ?? 'New conversation'}</span>
-              </button>
-            ))}
+              return (
+                <button
+                  key={conversation.id}
+                  type="button"
+                  onClick={() => handleSelect(conversation.id)}
+                  className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                    isSelected ? 'bg-muted' : 'hover:bg-white/10'
+                  }`}
+                >
+                  <MessageSquare size={17} fill={isSelected ? 'currentColor' : 'none'} />
+
+                  <span className="truncate">{conversation.title ?? 'New conversation'}</span>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

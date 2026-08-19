@@ -6,9 +6,10 @@ import { useAuth } from '@/features/auth'
 
 interface TopNavProps {
   onOpenSidebar: () => void
+  title: string
 }
 
-export function TopNav({ onOpenSidebar }: TopNavProps) {
+export function TopNav({ onOpenSidebar, title }: TopNavProps) {
   const { user } = useAuth()
 
   return (
@@ -24,7 +25,9 @@ export function TopNav({ onOpenSidebar }: TopNavProps) {
         </button>
 
         <div>
-          <h1 className="text-sm font-semibold">KubeChat</h1>
+          <h1 className="text-sm font-semibold md:hidden">KubeChat</h1>
+
+          <h1 className="hidden text-sm font-semibold md:block">{title}</h1>
 
           {user && <p className="text-xs text-muted-foreground">{user.username}</p>}
         </div>
