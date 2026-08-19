@@ -1,10 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 
-import type {
-  Conversation,
-  Message,
-  ConversationVisibility,
-} from '../types/conversation.types'
+import type { Conversation, Message, ConversationVisibility } from '../types/conversation.types'
 
 interface GraphQLResponse<T> {
   data?: T
@@ -13,10 +9,7 @@ interface GraphQLResponse<T> {
   }>
 }
 
-async function graphqlRequest<T>(
-  query: string,
-  variables?: Record<string, unknown>,
-): Promise<T> {
+async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   const response = await apiClient<GraphQLResponse<T>>('/graphql', {
     method: 'POST',
     body: JSON.stringify({
@@ -55,9 +48,7 @@ export async function getConversations(): Promise<Conversation[]> {
   return response.conversations
 }
 
-export async function getPublicConversations(
-  search?: string,
-): Promise<Conversation[]> {
+export async function getPublicConversations(search?: string): Promise<Conversation[]> {
   const response = await graphqlRequest<{
     publicConversations: Conversation[]
   }>(
@@ -115,9 +106,7 @@ export async function createConversation(
   return response.createConversation
 }
 
-export async function joinConversation(
-  conversationId: string,
-): Promise<Conversation> {
+export async function joinConversation(conversationId: string): Promise<Conversation> {
   const response = await graphqlRequest<{
     joinConversation: Conversation
   }>(
@@ -141,9 +130,7 @@ export async function joinConversation(
   return response.joinConversation
 }
 
-export async function deleteConversation(
-  conversationId: string,
-): Promise<boolean> {
+export async function deleteConversation(conversationId: string): Promise<boolean> {
   const response = await graphqlRequest<{
     deleteConversation: boolean
   }>(
@@ -162,11 +149,10 @@ export async function deleteConversation(
   return response.deleteConversation
 }
 
-export async function getMessages(
-  conversationId: string,
-): Promise<Message[]> {
+export async function getMessages(conversationId: string): Promise<Message[]> {
   const response = await graphqlRequest<{
     conversation: {
+      id: string
       messages: Message[]
     } | null
   }>(
@@ -181,6 +167,7 @@ export async function getMessages(
             content
             createdAt
             userId
+            username
             conversationId
           }
         }

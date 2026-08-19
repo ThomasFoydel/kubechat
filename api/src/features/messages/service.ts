@@ -13,6 +13,7 @@ function toMessageResponse(
     content: message.content,
     createdAt: message.createdAt.toISOString(),
     userId: message.userId,
+    username: message.user.username,
     conversationId: message.conversationId,
   }
 }
@@ -29,6 +30,7 @@ async function createMessage(
     content: message.content,
     createdAt: message.createdAt.toISOString(),
     userId: message.userId,
+    username: message.user.username,
     conversationId: message.conversationId,
   }
 }
@@ -41,6 +43,7 @@ async function getMessagesByConversationId(conversationId: string): Promise<Mess
     content: message.content,
     createdAt: message.createdAt.toISOString(),
     userId: message.userId,
+    username: message.user.username,
     conversationId: message.conversationId,
   }))
 }
