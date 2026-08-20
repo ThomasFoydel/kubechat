@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - staging
 
 permissions:
   contents: read
@@ -36,5 +37,6 @@ jobs:
           build-args: |
             DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test
           tags: |
-            ghcr.io/thomasfoydel/kubechat-api:latest
             ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
+            ghcr.io/thomasfoydel/kubechat-api:${{ github.ref_name }}
+            ${{ github.ref_name == 'master' && 'ghcr.io/thomasfoydel/kubechat-api:latest' || '' }}
