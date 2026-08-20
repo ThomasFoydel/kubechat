@@ -4,6 +4,8 @@ import 'dotenv/config'
 import express from 'express'
 
 import { config } from './config/env'
+import { corsError } from './errors/errors'
+import { errorHandler } from './middleware/error-handler'
 import apiRoutes from './routes'
 
 const app = express()
@@ -16,7 +18,7 @@ app.use(
         return
       }
 
-      callback(new Error('Not allowed by CORS'))
+      callback(corsError())
     },
     credentials: true,
   }),
@@ -27,5 +29,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/api/v1', apiRoutes)
+
+app.use(errorHandler)
 
 export default app

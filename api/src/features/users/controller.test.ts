@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { describe, expect, it, vi } from 'vitest'
+
 import { makeUser } from '../../test/factories/user'
 import { getUserById } from './controller'
 import { userService } from './service'
@@ -34,7 +35,7 @@ describe('getUserById', () => {
     expect(json).toHaveBeenCalledWith(user)
   })
 
-  it('returns 404 when the user is not found', async () => {
+  it('throws a user not found error when the user does not exist', async () => {
     vi.mocked(userService.getUserById).mockResolvedValue(null)
 
     const req = {
@@ -43,19 +44,14 @@ describe('getUserById', () => {
       },
     } as Request<{ id: string }>
 
-    const json = vi.fn()
-    const status = vi.fn().mockReturnValue({ json })
+    const res = {} as Response
 
-    const res = {
-      status,
-    } as unknown as Response
-
-    await getUserById(req, res)
-
-    expect(userService.getUserById).toHaveBeenCalledWith('missing-user')
-    expect(status).toHaveBeenCalledWith(404)
-    expect(json).toHaveBeenCalledWith({
+    await expect(getUserById(req, res)).rejects.toMatchObject({
+      code: 'USER_NOT_FOUND',
+      statusCode: 404,
       message: 'User not found',
     })
+
+    expect(userService.getUserById).toHaveBeenCalledWith('missing-user')
   })
 })

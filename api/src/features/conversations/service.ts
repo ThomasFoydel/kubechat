@@ -1,3 +1,9 @@
+import {
+  conversationAccessDenied,
+  conversationNotFound,
+  conversationNotPublic,
+  forbidden,
+} from '../../errors/errors'
 import { ConversationResponse, CreateConversationInput, UpdateConversationInput } from './dto'
 import { conversationRepository } from './repository'
 
@@ -18,8 +24,7 @@ function toConversationResponse(
 }
 
 function mapConversationResponse(
-  conversation: Awaited<ReturnType<typeof conversationRepository.getConversationById>> &
-    object,
+  conversation: Awaited<ReturnType<typeof conversationRepository.getConversationById>> & object,
 ): ConversationResponse {
   return {
     id: conversation.id,
@@ -56,7 +61,9 @@ async function getUserConversations(userId: string): Promise<ConversationRespons
 }
 
 async function getPublicConversations(search?: string): Promise<ConversationResponse[]> {
-  const conversations = await conversationRepository.getPublicConversations(search?.trim() || undefined)
+  const conversations = await conversationRepository.getPublicConversations(
+    search?.trim() || undefined,
+  )
 
   return conversations.map(mapConversationResponse)
 }
@@ -69,7 +76,7 @@ async function updateConversation(
   const canUpdate = await conversationRepository.isAdmin(id, userId)
 
   if (!canUpdate) {
-    throw new Error('You do not have permission to update this conversation')
+    throw forbidden('You do not have permission to update this conversation')
   }
 
   const conversation = await conversationRepository.updateConversation(
@@ -85,24 +92,21 @@ async function deleteConversation(id: string, userId: string): Promise<void> {
   const canDelete = await conversationRepository.isAdmin(id, userId)
 
   if (!canDelete) {
-    throw new Error('You do not have permission to delete this conversation')
+    throw forbidden('You do not have permission to delete this conversation')
   }
 
   await conversationRepository.deleteConversation(id)
 }
 
-async function joinConversation(
-  id: string,
-  userId: string,
-): Promise<ConversationResponse> {
+async function joinConversation(id: string, userId: string): Promise<ConversationResponse> {
   const conversation = await conversationRepository.getConversationById(id)
 
   if (!conversation) {
-    throw new Error('Conversation not found')
+    throw conversationNotFound()
   }
 
   if (conversation.visibility !== 'PUBLIC') {
-    throw new Error('You can only join public conversations')
+    throw conversationNotPublic()
   }
 
   await conversationRepository.addMember(id, userId)
