@@ -1,3 +1,4 @@
+import { emailAlreadyRegistered, invalidCredentials } from '../../errors/errors'
 import { userService } from '../users/service'
 import { hashPassword, verifyPassword } from './password'
 import { LoginRequest, RegisterRequest } from './dto'
@@ -7,7 +8,7 @@ async function register(input: RegisterRequest) {
   const existingUser = await userService.getUserByEmail(input.email)
 
   if (existingUser) {
-    throw new Error('Email already registered')
+    throw emailAlreadyRegistered()
   }
 
   const passwordHash = await hashPassword(input.password)
@@ -34,13 +35,13 @@ async function login(input: LoginRequest) {
   const user = await userService.getUserByEmail(input.email)
 
   if (!user) {
-    throw new Error('Invalid email or password')
+    throw invalidCredentials()
   }
 
   const passwordValid = await verifyPassword(input.password, user.passwordHash)
 
   if (!passwordValid) {
-    throw new Error('Invalid email or password')
+    throw invalidCredentials()
   }
 
   const sessionId = await createSession(user.id)

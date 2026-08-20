@@ -120,6 +120,7 @@ describe('API', () => {
       })
 
       expect(response.status).toBe(201)
+
       expect(response.body).toEqual({
         id: 'user-123',
         username: 'thomas',
@@ -143,7 +144,77 @@ describe('API', () => {
       })
 
       expect(response.status).toBe(400)
+
+      expect(response.body).toEqual({
+        message: 'Validation failed',
+        code: 'VALIDATION_ERROR',
+        details: expect.arrayContaining([
+          expect.objectContaining({
+            field: 'username',
+          }),
+          expect.objectContaining({
+            field: 'email',
+          }),
+          expect.objectContaining({
+            field: 'password',
+          }),
+        ]),
+      })
+
       expect(mocks.authService.register).not.toHaveBeenCalled()
+    })
+
+    it('returns 409 when the email is already registered', async () => {
+      mocks.authService.register.mockRejectedValue(new Error('Email already registered'))
+
+      const response = await request(app).post('/api/v1/auth/register').send({
+        username: 'thomas',
+        email: 'thomas@example.com',
+        password: 'password123',
+      })
+
+      expect(response.status).toBe(500)
+
+      expect(response.body).toEqual({
+        message: 'Internal server error',
+        code: 'INTERNAL_SERVER_ERROR',
+      })
+    })
+
+    it('returns 409 for a typed email registration conflict', async () => {
+      const { emailAlreadyRegistered } = await import('./errors/errors')
+
+      mocks.authService.register.mockRejectedValue(emailAlreadyRegistered())
+
+      const response = await request(app).post('/api/v1/auth/register').send({
+        username: 'thomas',
+        email: 'thomas@example.com',
+        password: 'password123',
+      })
+
+      expect(response.status).toBe(409)
+
+      expect(response.body).toEqual({
+        message: 'Email already registered',
+        code: 'EMAIL_ALREADY_REGISTERED',
+      })
+    })
+
+    it('returns 500 for an unexpected registration error', async () => {
+      mocks.authService.register.mockRejectedValue(new Error('Database connection failed'))
+
+      const response = await request(app).post('/api/v1/auth/register').send({
+        username: 'thomas',
+        email: 'thomas@example.com',
+        password: 'password123',
+      })
+
+      expect(response.status).toBe(500)
+
+      expect(response.body).toEqual({
+        message: 'Internal server error',
+        code: 'INTERNAL_SERVER_ERROR',
+      })
     })
 
     it('logs in a user', async () => {
@@ -162,6 +233,7 @@ describe('API', () => {
       })
 
       expect(response.status).toBe(200)
+
       expect(response.body).toEqual({
         id: 'user-123',
         username: 'thomas',
@@ -176,8 +248,34 @@ describe('API', () => {
       expect(response.headers['set-cookie']).toBeDefined()
     })
 
+    it('rejects an invalid login request', async () => {
+      const response = await request(app).post('/api/v1/auth/login').send({
+        email: 'not-an-email',
+        password: '',
+      })
+
+      expect(response.status).toBe(400)
+
+      expect(response.body).toEqual({
+        message: 'Validation failed',
+        code: 'VALIDATION_ERROR',
+        details: expect.arrayContaining([
+          expect.objectContaining({
+            field: 'email',
+          }),
+          expect.objectContaining({
+            field: 'password',
+          }),
+        ]),
+      })
+
+      expect(mocks.authService.login).not.toHaveBeenCalled()
+    })
+
     it('returns 401 for invalid login credentials', async () => {
-      mocks.authService.login.mockRejectedValue(new Error('Invalid email or password'))
+      const { invalidCredentials } = await import('./errors/errors')
+
+      mocks.authService.login.mockRejectedValue(invalidCredentials())
 
       const response = await request(app).post('/api/v1/auth/login').send({
         email: 'thomas@example.com',
@@ -185,8 +283,26 @@ describe('API', () => {
       })
 
       expect(response.status).toBe(401)
+
       expect(response.body).toEqual({
         message: 'Invalid email or password',
+        code: 'INVALID_CREDENTIALS',
+      })
+    })
+
+    it('returns 500 for an unexpected login error', async () => {
+      mocks.authService.login.mockRejectedValue(new Error('Database connection failed'))
+
+      const response = await request(app).post('/api/v1/auth/login').send({
+        email: 'thomas@example.com',
+        password: 'password123',
+      })
+
+      expect(response.status).toBe(500)
+
+      expect(response.body).toEqual({
+        message: 'Internal server error',
+        code: 'INTERNAL_SERVER_ERROR',
       })
     })
 
@@ -201,6 +317,7 @@ describe('API', () => {
       const response = await request(app).get('/api/v1/auth/me')
 
       expect(response.status).toBe(200)
+
       expect(response.body).toEqual({
         id: 'user-123',
         username: 'thomas',
@@ -231,6 +348,7 @@ describe('API', () => {
       const response = await request(app).get('/api/v1/users/user-456')
 
       expect(response.status).toBe(200)
+
       expect(response.body).toEqual({
         id: 'user-456',
         username: 'alice',
@@ -247,8 +365,10 @@ describe('API', () => {
       const response = await request(app).get('/api/v1/users/missing-user')
 
       expect(response.status).toBe(404)
+
       expect(response.body).toEqual({
         message: 'User not found',
+        code: 'USER_NOT_FOUND',
       })
     })
   })
