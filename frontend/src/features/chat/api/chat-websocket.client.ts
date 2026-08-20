@@ -18,16 +18,29 @@ function getWebSocketUrl(): string {
     return configuredUrl
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://kubechat.duckdns.org'
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-  const url = new URL(apiUrl)
+  if (apiUrl) {
+    const url = new URL(apiUrl)
 
-  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    url.pathname = '/ws'
+    url.search = ''
 
-  url.pathname = '/ws'
-  url.search = ''
+    return url.toString()
+  }
 
-  return url.toString()
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.origin)
+
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    url.pathname = '/ws'
+    url.search = ''
+
+    return url.toString()
+  }
+
+  throw new Error('Unable to determine WebSocket URL')
 }
 
 function parseServerMessage(data: string): ServerMessage | null {
