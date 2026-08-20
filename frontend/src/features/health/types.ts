@@ -1,22 +1,10 @@
-export interface LiveHealthResponse {
-  status: string
-  service: string
-  timestamp: string
-}
-
-export interface ReadyHealthResponse {
-  status: string
-  service: string
-  database: string
-  redis: string
-  timestamp: string
-}
-
 export interface HealthStatus {
-  api: {
-    status: string
-    timestamp: string
-  }
+  status: string
+  service: string
+  environment: string
+  instance: string
+  websocketNode: string
   database: string
   redis: string
+  timestamp: string
 }

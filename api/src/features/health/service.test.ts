@@ -1,7 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getReadinessStatus } from './service'
 import { isDatabaseHealthy, isRedisHealthy } from './repository'
+import { getReadinessStatus } from './service'
+
+vi.mock('../../config/env', () => ({
+  config: {
+    nodeEnv: 'test',
+    websocketNodeId: 'test-instance',
+  },
+}))
 
 vi.mock('./repository', () => ({
   isDatabaseHealthy: vi.fn(),
@@ -12,31 +19,28 @@ describe('getReadinessStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  it('returns ok when the database and Redis are healthy', async () => {
     vi.mocked(isDatabaseHealthy).mockResolvedValue(undefined)
     vi.mocked(isRedisHealthy).mockResolvedValue(undefined)
+  })
 
+  it('returns healthy when database and Redis are available', async () => {
     const result = await getReadinessStatus()
 
     expect(result.status).toBe('ok')
     expect(result.service).toBe('kubechat-api')
+    expect(result.environment).toBe('test')
+    expect(result.instance).toBe('test-instance')
+    expect(result.websocketNode).toBe('test-instance')
     expect(result.database).toBe('connected')
     expect(result.redis).toBe('connected')
+    expect(result.timestamp).toEqual(expect.any(String))
 
     expect(isDatabaseHealthy).toHaveBeenCalledOnce()
     expect(isRedisHealthy).toHaveBeenCalledOnce()
   })
 
-  it('reports the database as unavailable when the database check fails', async () => {
+  it('returns an error when the database is unavailable', async () => {
     vi.mocked(isDatabaseHealthy).mockRejectedValue(new Error('Database unavailable'))
-    vi.mocked(isRedisHealthy).mockResolvedValue(undefined)
 
     const result = await getReadinessStatus()
 
@@ -45,8 +49,7 @@ describe('getReadinessStatus', () => {
     expect(result.redis).toBe('connected')
   })
 
-  it('reports Redis as unavailable when the Redis check fails', async () => {
-    vi.mocked(isDatabaseHealthy).mockResolvedValue(undefined)
+  it('returns an error when Redis is unavailable', async () => {
     vi.mocked(isRedisHealthy).mockRejectedValue(new Error('Redis unavailable'))
 
     const result = await getReadinessStatus()
@@ -56,8 +59,9 @@ describe('getReadinessStatus', () => {
     expect(result.redis).toBe('unavailable')
   })
 
-  it('reports both dependencies as unavailable when both checks fail', async () => {
+  it('returns an error when both dependencies are unavailable', async () => {
     vi.mocked(isDatabaseHealthy).mockRejectedValue(new Error('Database unavailable'))
+
     vi.mocked(isRedisHealthy).mockRejectedValue(new Error('Redis unavailable'))
 
     const result = await getReadinessStatus()
