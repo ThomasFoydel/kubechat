@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubechat-frontend
+  namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubechat-frontend
+  template:
+    metadata:
+      labels:
+        app: kubechat-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/thomasfoydel/kubechat-frontend:7ddd8e87ed04b4a8b0d6c79103f3b6d2f0cb3a96
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
