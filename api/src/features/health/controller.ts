@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+
 import { getReadinessStatus } from './service'
 
 export async function livenessCheck(_req: Request, res: Response) {

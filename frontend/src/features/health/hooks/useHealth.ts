@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { healthApi, HealthResponse } from '../api/health.api'
 
 export function useHealth() {
@@ -10,7 +11,7 @@ export function useHealth() {
 
   useEffect(() => {
     healthApi
-      .getLive()
+      .getReady()
       .then(setData)
       .catch(setError)
       .finally(() => setIsLoading(false))
