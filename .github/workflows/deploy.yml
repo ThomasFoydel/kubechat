@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - staging
 
 permissions:
   contents: read
@@ -40,43 +41,62 @@ jobs:
 
           kubectl config set-context kubechat \
             --cluster=kubechat \
-            --user=github-actions \
-            --namespace=default
+            --user=github-actions
 
           kubectl config use-context kubechat
 
+      - name: Set deployment namespace
+        id: deployment
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "staging" ]; then
+            echo "namespace=staging" >> "$GITHUB_OUTPUT"
+          else
+            echo "namespace=default" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Verify Kubernetes access
         run: |
-          kubectl auth can-i get deployments
-          kubectl auth can-i patch deployments
-          kubectl auth can-i create jobs
-          kubectl auth can-i get jobs
-          kubectl auth can-i delete jobs
+          kubectl auth can-i get deployments -n ${{ steps.deployment.outputs.namespace }}
+          kubectl auth can-i patch deployments -n ${{ steps.deployment.outputs.namespace }}
+          kubectl auth can-i create jobs -n ${{ steps.deployment.outputs.namespace }}
+          kubectl auth can-i get jobs -n ${{ steps.deployment.outputs.namespace }}
+          kubectl auth can-i delete jobs -n ${{ steps.deployment.outputs.namespace }}
 
       - name: Run database migrations
         run: |
-          kubectl delete job kubechat-api-migrations --ignore-not-found
+          kubectl delete job kubechat-api-migrations \
+            -n ${{ steps.deployment.outputs.namespace }} \
+            --ignore-not-found
 
           sed \
             "s|MIGRATION_IMAGE|ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}|" \
             k8s/migrations/job.yaml \
-            | kubectl apply -f -
+            | kubectl apply -n ${{ steps.deployment.outputs.namespace }} -f -
 
           kubectl wait \
             --for=condition=complete \
             --timeout=300s \
+            -n ${{ steps.deployment.outputs.namespace }} \
             job/kubechat-api-migrations
 
       - name: Deploy API
         run: |
-          kubectl set image deployment/kubechat-api \
-            api=ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }}
+          kubectl set image \
+            deployment/kubechat-api \
+            api=ghcr.io/thomasfoydel/kubechat-api:${{ github.sha }} \
+            -n ${{ steps.deployment.outputs.namespace }}
 
-          kubectl rollout status deployment/kubechat-api
+          kubectl rollout status \
+            deployment/kubechat-api \
+            -n ${{ steps.deployment.outputs.namespace }}
 
       - name: Deploy frontend
         run: |
-          kubectl set image deployment/kubechat-frontend \
-            frontend=ghcr.io/thomasfoydel/kubechat-frontend:${{ github.sha }}
+          kubectl set image \
+            deployment/kubechat-frontend \
+            frontend=ghcr.io/thomasfoydel/kubechat-frontend:${{ github.sha }} \
+            -n ${{ steps.deployment.outputs.namespace }}
 
-          kubectl rollout status deployment/kubechat-frontend
+          kubectl rollout status \
+            deployment/kubechat-frontend \
+            -n ${{ steps.deployment.outputs.namespace }}
