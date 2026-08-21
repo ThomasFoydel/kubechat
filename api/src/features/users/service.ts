@@ -1,4 +1,5 @@
-import { UserResponse } from './dto'
+import { getUserPresence } from '../../db/redisPresence'
+import { UserResponse, UserWithPresenceResponse } from './dto'
 import { toUserResponse } from './mapper'
 import { userRepository } from './repository'
 
@@ -26,8 +27,25 @@ async function getUserByEmail(email: string) {
   return userRepository.getUserByEmail(email)
 }
 
+async function getUsers(): Promise<UserWithPresenceResponse[]> {
+  const users = await userRepository.getUsers()
+
+  return Promise.all(
+    users.map(async (user) => {
+      const response = toUserResponse(user)
+      const presence = await getUserPresence(user.id)
+
+      return {
+        ...response,
+        presence,
+      }
+    }),
+  )
+}
+
 export const userService = {
   createUser,
   getUserById,
   getUserByEmail,
+  getUsers,
 }
