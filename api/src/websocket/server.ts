@@ -1,6 +1,8 @@
+import { randomUUID } from 'crypto'
 import { IncomingMessage } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 
+import { registerUserPresence, unregisterUserPresence } from '../db/redisPresence'
 import {
   initializeRedisPubSub,
   MessageCreatedEvent,
@@ -61,9 +63,7 @@ function parseMessage(data: RawData): ClientMessage | null {
 function handleMessageCreatedEvent(event: MessageCreatedEvent): void {
   const serverMessage: ServerMessage = {
     type: 'message.created',
-
     message: event.payload.message,
-
     clientMessageId: event.payload.clientMessageId,
   }
 
@@ -95,7 +95,6 @@ async function handleMessage(
 
     send(socket, {
       type: 'conversation.subscribed',
-
       conversationId: message.conversationId,
     })
 
@@ -111,7 +110,6 @@ async function handleMessage(
 
     send(socket, {
       type: 'conversation.unsubscribed',
-
       conversationId: message.conversationId,
     })
 
@@ -159,17 +157,21 @@ async function handleMessage(
 }
 
 async function authenticate(request: IncomingMessage): Promise<string | null> {
-  const userId = await getUserIdFromCookieHeader(request.headers.cookie)
-
-  return userId
+  return getUserIdFromCookieHeader(request.headers.cookie)
 }
 
-async function handleSocketClose(socket: WebSocket): Promise<void> {
+async function handleSocketClose(
+  socket: WebSocket,
+  userId: string,
+  connectionId: string,
+): Promise<void> {
   const emptyConversations = connectionManager.unsubscribeAll(socket)
 
   await Promise.all(
     emptyConversations.map((conversationId) => unregisterConversationNode(conversationId)),
   )
+
+  await unregisterUserPresence(userId, connectionId)
 }
 
 async function refreshNodeLeases(): Promise<void> {
@@ -187,12 +189,16 @@ export function createWebSocketServer(): WebSocketServer {
 
   wss.on('connection', (socket, request) => {
     void authenticate(request)
-      .then((userId) => {
+      .then(async (userId) => {
         if (!userId) {
           socket.close(1008, 'Authentication required')
 
           return
         }
+
+        const connectionId = randomUUID()
+
+        await registerUserPresence(userId, connectionId)
 
         socket.on('message', (data) => {
           const message = parseMessage(data)
@@ -216,7 +222,7 @@ export function createWebSocketServer(): WebSocketServer {
         })
 
         socket.on('close', () => {
-          void handleSocketClose(socket).catch((error) => {
+          void handleSocketClose(socket, userId, connectionId).catch((error) => {
             console.error('WebSocket close cleanup error:', error)
           })
         })

@@ -33,8 +33,17 @@ async function getUserByEmail(email: string): Promise<UserModel | null> {
   })
 }
 
+async function getUsers(): Promise<UserModel[]> {
+  return prisma.user.findMany({
+    orderBy: {
+      createdAt: 'asc',
+    },
+  })
+}
+
 export const userRepository = {
   createUser,
   getUserById,
   getUserByEmail,
+  getUsers,
 }
