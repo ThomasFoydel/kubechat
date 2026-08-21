@@ -12,7 +12,7 @@ const config: CodegenConfig = {
         inputMaybeValue: 'T | null | undefined',
 
         mappers: {
-          Conversation: '../../features/conversations/dto#ConversationResponse',
+          Conversation: '@kubechat/contracts#ConversationResponse',
         },
       },
     },

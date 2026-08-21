@@ -3,7 +3,7 @@
 import { MessageSquare, Plus, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import type { Conversation } from '../types/conversation.types'
+import type { Conversation } from '@kubechat/contracts'
 
 interface ChatSidebarProps {
   conversations: Conversation[]

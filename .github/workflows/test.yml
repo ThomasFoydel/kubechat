@@ -10,10 +10,6 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: api
-
     env:
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: postgresql://test:test@localhost:5432/test
@@ -29,23 +25,22 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: api/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
+      - name: Build contracts
+        run: npm run build --workspace=@kubechat/contracts
 
-      - name: Run tests
-        run: npm run test
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=api/prisma/schema.prisma
+
+      - name: Run API tests
+        run: npm run test --workspace=api
 
   frontend-tests:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout repository
@@ -56,10 +51,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm run test
+      - name: Build contracts
+        run: npm run build --workspace=@kubechat/contracts
+
+      - name: Run frontend tests
+        run: npm run test --workspace=frontend

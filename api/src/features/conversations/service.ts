@@ -1,10 +1,9 @@
 import {
-  conversationAccessDenied,
-  conversationNotFound,
-  conversationNotPublic,
-  forbidden,
-} from '../../errors/errors'
-import { ConversationResponse, CreateConversationInput, UpdateConversationInput } from './dto'
+  ConversationResponse,
+  CreateConversationInput,
+  UpdateConversationInput,
+} from '@kubechat/contracts'
+import { conversationNotFound, conversationNotPublic, forbidden } from '../../errors/errors'
 import { conversationRepository } from './repository'
 
 function toConversationResponse(

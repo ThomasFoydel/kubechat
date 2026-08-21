@@ -1,4 +1,4 @@
-import { UserResponse } from '../../features/users/dto'
+import { UserResponse } from '@kubechat/contracts'
 
 export function makeUser(overrides: Partial<UserResponse> = {}): UserResponse {
   return {

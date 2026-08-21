@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/api-client'
 
-import type { UserWithPresence } from '../types/user.types'
+import type { UserWithPresenceResponse } from '@kubechat/contracts'
 
-export function getUsers(): Promise<UserWithPresence[]> {
-  return apiClient<UserWithPresence[]>('/api/v1/users')
+export function getUsers(): Promise<UserWithPresenceResponse[]> {
+  return apiClient<UserWithPresenceResponse[]>('/api/v1/users')
 }

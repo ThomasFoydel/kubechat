@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 
+import type { LoginRequest, RegisterRequest } from '@kubechat/contracts'
 import { authenticationRequired } from '../../errors/errors'
 import { userService } from '../users/service'
 import { clearSessionCookie, getSessionCookie, setSessionCookie } from './cookies'
-import { LoginRequest, RegisterRequest } from './dto'
 import { AuthenticatedRequest } from './middleware'
 import { authService } from './service'
 

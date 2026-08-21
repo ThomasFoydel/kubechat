@@ -1,5 +1,6 @@
+import type { UserResponse, UserWithPresenceResponse } from '@kubechat/contracts'
+
 import { getUserPresence } from '../../db/redisPresence'
-import { UserResponse, UserWithPresenceResponse } from './dto'
 import { toUserResponse } from './mapper'
 import { userRepository } from './repository'
 

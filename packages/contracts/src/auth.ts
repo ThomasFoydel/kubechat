@@ -23,8 +23,15 @@ export type RegisterRequest = z.infer<typeof registerSchema>
 
 export const loginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
-
   password: z.string().min(1, 'Password is required'),
 })
 
 export type LoginRequest = z.infer<typeof loginSchema>
+
+export const authUserResponseSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  email: z.string(),
+})
+
+export type AuthUserResponse = z.infer<typeof authUserResponseSchema>

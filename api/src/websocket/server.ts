@@ -18,7 +18,7 @@ import { createMessageSchema } from '../features/messages/validation'
 
 import { WebSocketConnectionManager } from './connections'
 
-import { ClientMessage, ServerMessage } from './protocol'
+import type { ClientMessage, ServerMessage } from '@kubechat/contracts'
 
 const websocketPath = '/ws'
 

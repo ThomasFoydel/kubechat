@@ -1,4 +1,5 @@
-import { UserResponse } from './dto'
+import type { UserResponse } from '@kubechat/contracts'
+
 import { UserModel } from './repository'
 
 export function toUserResponse(user: UserModel): UserResponse {

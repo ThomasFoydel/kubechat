@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 
 import { getPublicConversations } from '../api/chat.api'
 
-import type { Conversation } from '../types/conversation.types'
+import type { Conversation } from '@kubechat/contracts'
 
 interface PublicConversationDialogProps {
   open: boolean
