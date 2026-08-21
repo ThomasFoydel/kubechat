@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Generate Prisma client
-        run: npx prisma generate --workspace=api
+        run: npm exec --workspace=api prisma generate
 
       - name: Run API tests
         run: npm run test --workspace=api
