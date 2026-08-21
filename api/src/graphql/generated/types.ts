@@ -1,5 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { ConversationResponse } from '../../features/conversations/dto';
+import { ConversationResponse } from '@kubechat/contracts';
 import { GraphQLContext } from '../context';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null | undefined;
@@ -41,6 +41,7 @@ export type Message = {
   createdAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   userId: Scalars['ID']['output'];
+  username: Scalars['String']['output'];
 };
 
 export type Mutation = {
@@ -220,6 +221,7 @@ export type MessageResolvers<ContextType = GraphQLContext, ParentType extends Re
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type MutationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{

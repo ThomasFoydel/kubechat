@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 
-import type { ConversationVisibility } from '../types/conversation.types'
+import type { ConversationVisibility } from '@kubechat/contracts'
 
 interface NewConversationDialogProps {
   open: boolean

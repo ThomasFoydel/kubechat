@@ -1,7 +1,7 @@
+import type { LoginRequest, RegisterRequest } from '@kubechat/contracts'
 import { emailAlreadyRegistered, invalidCredentials } from '../../errors/errors'
 import { userService } from '../users/service'
 import { hashPassword, verifyPassword } from './password'
-import { LoginRequest, RegisterRequest } from './dto'
 import { createSession, deleteSession } from './session'
 
 async function register(input: RegisterRequest) {

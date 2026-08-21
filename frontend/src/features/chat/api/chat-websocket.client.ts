@@ -1,4 +1,4 @@
-import type { ClientMessage, ServerMessage } from '../types/websocket.protocol'
+import type { ClientMessage, ServerMessage } from '@kubechat/contracts'
 
 export type WebSocketConnectionStatus =
   'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'

@@ -9,7 +9,7 @@ import {
   register as registerUser,
 } from '../api/auth.api'
 
-import type { LoginRequest, RegisterRequest, User } from '../types/auth.types'
+import type { LoginRequest, RegisterRequest, User } from '@kubechat/contracts'
 
 const CURRENT_USER_QUERY_KEY = ['auth', 'current-user']
 

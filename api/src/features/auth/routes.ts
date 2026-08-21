@@ -1,7 +1,7 @@
+import { loginSchema, registerSchema } from '@kubechat/contracts'
 import { Router } from 'express'
 import { validateBody } from '../../middleware/validate'
 import { getCurrentUser, login, logout, register } from './controller'
-import { loginSchema, registerSchema } from './dto'
 import { requireAuth } from './middleware'
 
 const router = Router()

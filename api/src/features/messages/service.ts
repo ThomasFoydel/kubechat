@@ -1,4 +1,4 @@
-import { CreateMessageInput, MessageResponse } from './dto'
+import { CreateMessageInput, MessageResponse } from '@kubechat/contracts'
 import { messageRepository } from './repository'
 
 function toMessageResponse(

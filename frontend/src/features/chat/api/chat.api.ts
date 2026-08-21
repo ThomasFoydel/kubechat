@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 
-import type { Conversation, Message, ConversationVisibility } from '../types/conversation.types'
+import type { Conversation, Message, ConversationVisibility } from '@kubechat/contracts'
 
 interface GraphQLResponse<T> {
   data?: T

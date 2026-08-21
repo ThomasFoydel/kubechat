@@ -9,7 +9,7 @@ import {
   joinConversation,
 } from '../api/chat.api'
 
-import type { ConversationVisibility } from '../types/conversation.types'
+import type { ConversationVisibility } from '@kubechat/contracts'
 
 const CONVERSATIONS_QUERY_KEY = ['chat', 'conversations']
 
@@ -22,13 +22,8 @@ export function useConversations() {
   })
 
   const createMutation = useMutation({
-    mutationFn: ({
-      title,
-      visibility,
-    }: {
-      title?: string
-      visibility?: ConversationVisibility
-    }) => createConversation(title, visibility),
+    mutationFn: ({ title, visibility }: { title?: string; visibility?: ConversationVisibility }) =>
+      createConversation(title, visibility),
 
     onSuccess: (conversation) => {
       queryClient.setQueryData(
@@ -67,17 +62,12 @@ export function useConversations() {
       queryClient.setQueryData(
         CONVERSATIONS_QUERY_KEY,
         (current: Awaited<ReturnType<typeof getConversations>> | undefined) =>
-          (current ?? []).filter(
-            (conversation) => conversation.id !== conversationId,
-          ),
+          (current ?? []).filter((conversation) => conversation.id !== conversationId),
       )
     },
   })
 
-  async function handleCreateConversation(
-    title?: string,
-    visibility?: ConversationVisibility,
-  ) {
+  async function handleCreateConversation(title?: string, visibility?: ConversationVisibility) {
     return createMutation.mutateAsync({
       title,
       visibility,

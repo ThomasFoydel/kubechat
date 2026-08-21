@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import type { WebSocketConnectionStatus } from '../api/chat-websocket.client'
 import { getMessages } from '../api/chat.api'
 import { useChatContext } from '../context/ChatProvider'
-import type { Message } from '../types/conversation.types'
+import type { Message } from '@kubechat/contracts'
 
 export interface UseChatResult {
   messages: Message[]

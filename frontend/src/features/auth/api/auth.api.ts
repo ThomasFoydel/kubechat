@@ -1,6 +1,11 @@
-import { ApiError, apiClient } from '@/lib/api-client'
+import type {
+  AuthUserResponse,
+  LoginRequest,
+  RegisterRequest,
+  UserResponse,
+} from '@kubechat/contracts'
 
-import type { AuthUserResponse, LoginRequest, RegisterRequest, User } from '../types/auth.types'
+import { ApiError, apiClient } from '@/lib/api-client'
 
 export function register(data: RegisterRequest): Promise<AuthUserResponse> {
   return apiClient<AuthUserResponse>('/api/v1/auth/register', {
@@ -22,9 +27,9 @@ export function logout(): Promise<void> {
   })
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<UserResponse | null> {
   try {
-    return await apiClient<User>('/api/v1/auth/me')
+    return await apiClient<UserResponse>('/api/v1/auth/me')
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       return null
