@@ -1,13 +1,9 @@
 import { apiClient } from '@/lib/api-client'
 
-export interface HealthResponse {
-  status: string
-  service: string
-  timestamp: string
-}
+import type { HealthStatus } from '@kubechat/contracts'
 
 export const healthApi = {
-  getLive() {
-    return apiClient<HealthResponse>('/api/v1/health/live')
+  getReady() {
+    return apiClient<HealthStatus>('/api/v1/health/ready')
   },
 }

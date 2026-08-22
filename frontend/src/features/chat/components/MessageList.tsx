@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
-import type { Message } from '../types/conversation.types'
+import type { Message } from '@kubechat/contracts'
 
 interface MessageListProps {
   messages: Message[]

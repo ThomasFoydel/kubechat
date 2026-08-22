@@ -1,8 +1,7 @@
+import { MessageResponse } from '@kubechat/contracts'
 import { randomUUID } from 'crypto'
 import { createClient } from 'redis'
-
 import { config } from '../config/env'
-import { MessageResponse } from '../features/messages/dto'
 
 const websocketChannelPrefix = 'kubechat:websocket:node:'
 

@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { useAuth } from '@/features/auth'
 import { NewConversationDialog } from '@/features/chat/components/NewConversationDialog'
 import { useConversations } from '@/features/chat/hooks/useConversations'
-import type { ConversationVisibility } from '@/features/chat/types/conversation.types'
+import type { ConversationVisibility } from '@kubechat/contracts'
 
 const navigation = [
   {

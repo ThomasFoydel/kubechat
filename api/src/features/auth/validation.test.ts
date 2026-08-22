@@ -1,5 +1,5 @@
+import { loginSchema, registerSchema } from '@kubechat/contracts'
 import { describe, expect, it } from 'vitest'
-import { loginSchema, registerSchema } from './dto'
 
 describe('registerSchema', () => {
   it('accepts valid registration data', () => {

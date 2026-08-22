@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useChat } from '../hooks/useChat'
 import { useConversations } from '../hooks/useConversations'
 
-import type { ConversationVisibility } from '../types/conversation.types'
+import type { ConversationVisibility } from '@kubechat/contracts'
 
 import { ChatSidebar } from './ChatSidebar'
 import { ConfirmationDialog } from './ConfirmationDialog'

@@ -1,7 +1,34 @@
 import { WebSocket } from 'ws'
 
+interface UserConnection {
+  userId: string
+  connectionId: string
+  socket: WebSocket
+}
+
 export class WebSocketConnectionManager {
   private conversations = new Map<string, Set<WebSocket>>()
+
+  private userConnections = new Map<WebSocket, UserConnection>()
+
+  registerUserConnection(userId: string, connectionId: string, socket: WebSocket): void {
+    this.userConnections.set(socket, {
+      userId,
+      connectionId,
+      socket,
+    })
+  }
+
+  unregisterUserConnection(socket: WebSocket): void {
+    this.userConnections.delete(socket)
+  }
+
+  getUserConnections(): Array<{ userId: string; connectionId: string }> {
+    return Array.from(this.userConnections.values()).map(({ userId, connectionId }) => ({
+      userId,
+      connectionId,
+    }))
+  }
 
   subscribe(conversationId: string, socket: WebSocket): boolean {
     let connections = this.conversations.get(conversationId)

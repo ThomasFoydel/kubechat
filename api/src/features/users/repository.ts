@@ -3,6 +3,8 @@ import { prisma } from '../../db/prisma'
 
 export type UserModel = User
 
+const usersDashboardLimit = 100
+
 async function createUser(
   username: string,
   email: string,
@@ -33,8 +35,18 @@ async function getUserByEmail(email: string): Promise<UserModel | null> {
   })
 }
 
+async function getUsers(): Promise<UserModel[]> {
+  return prisma.user.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: usersDashboardLimit,
+  })
+}
+
 export const userRepository = {
   createUser,
   getUserById,
   getUserByEmail,
+  getUsers,
 }

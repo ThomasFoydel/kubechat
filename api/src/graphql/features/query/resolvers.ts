@@ -1,3 +1,4 @@
+import { authenticationRequired } from '../../../errors/errors'
 import { conversationService } from '../../../features/conversations/service'
 import { userService } from '../../../features/users/service'
 import { GraphQLContext } from '../../context'
@@ -14,7 +15,7 @@ export const queryResolvers: QueryResolvers<GraphQLContext> = {
 
   conversations: async (_parent, _args, context) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw authenticationRequired()
     }
 
     return conversationService.getUserConversations(context.userId)
@@ -22,7 +23,7 @@ export const queryResolvers: QueryResolvers<GraphQLContext> = {
 
   publicConversations: async (_parent, args, context) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw authenticationRequired()
     }
 
     return conversationService.getPublicConversations(args.search ?? undefined)
@@ -30,7 +31,7 @@ export const queryResolvers: QueryResolvers<GraphQLContext> = {
 
   conversation: async (_parent, args, context) => {
     if (!context.userId) {
-      throw new Error('Authentication required')
+      throw authenticationRequired()
     }
 
     const canAccess = await conversationService.canAccessConversation(args.id, context.userId)

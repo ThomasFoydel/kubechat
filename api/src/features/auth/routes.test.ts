@@ -2,6 +2,7 @@ import request from 'supertest'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import app from '../../app'
+import { emailAlreadyRegistered, invalidCredentials } from '../../errors/errors'
 import { userService } from '../users/service'
 import { authService } from './service'
 import { getUserIdFromSession } from './session'
@@ -74,6 +75,23 @@ describe('POST /api/v1/auth/register', () => {
     })
 
     expect(response.status).toBe(400)
+
+    expect(response.body).toEqual({
+      message: 'Validation failed',
+      code: 'VALIDATION_ERROR',
+      details: expect.arrayContaining([
+        expect.objectContaining({
+          field: 'username',
+        }),
+        expect.objectContaining({
+          field: 'email',
+        }),
+        expect.objectContaining({
+          field: 'password',
+        }),
+      ]),
+    })
+
     expect(authService.register).not.toHaveBeenCalled()
   })
 
@@ -81,7 +99,7 @@ describe('POST /api/v1/auth/register', () => {
     const user = makeAuthUser()
     const password = makePassword()
 
-    vi.mocked(authService.register).mockRejectedValue(new Error('Email already registered'))
+    vi.mocked(authService.register).mockRejectedValue(emailAlreadyRegistered())
 
     const response = await request(app).post('/api/v1/auth/register').send({
       username: user.username,
@@ -93,6 +111,27 @@ describe('POST /api/v1/auth/register', () => {
 
     expect(response.body).toEqual({
       message: 'Email already registered',
+      code: 'EMAIL_ALREADY_REGISTERED',
+    })
+  })
+
+  it('returns 500 for an unexpected registration error', async () => {
+    const user = makeAuthUser()
+    const password = makePassword()
+
+    vi.mocked(authService.register).mockRejectedValue(new Error('Database connection failed'))
+
+    const response = await request(app).post('/api/v1/auth/register').send({
+      username: user.username,
+      email: user.email,
+      password,
+    })
+
+    expect(response.status).toBe(500)
+
+    expect(response.body).toEqual({
+      message: 'Internal server error',
+      code: 'INTERNAL_SERVER_ERROR',
     })
   })
 })
@@ -138,13 +177,27 @@ describe('POST /api/v1/auth/login', () => {
     })
 
     expect(response.status).toBe(400)
+
+    expect(response.body).toEqual({
+      message: 'Validation failed',
+      code: 'VALIDATION_ERROR',
+      details: expect.arrayContaining([
+        expect.objectContaining({
+          field: 'email',
+        }),
+        expect.objectContaining({
+          field: 'password',
+        }),
+      ]),
+    })
+
     expect(authService.login).not.toHaveBeenCalled()
   })
 
   it('returns 401 for invalid credentials', async () => {
     const user = makeAuthUser()
 
-    vi.mocked(authService.login).mockRejectedValue(new Error('Invalid email or password'))
+    vi.mocked(authService.login).mockRejectedValue(invalidCredentials())
 
     const response = await request(app).post('/api/v1/auth/login').send({
       email: user.email,
@@ -155,6 +208,25 @@ describe('POST /api/v1/auth/login', () => {
 
     expect(response.body).toEqual({
       message: 'Invalid email or password',
+      code: 'INVALID_CREDENTIALS',
+    })
+  })
+
+  it('returns 500 for an unexpected login error', async () => {
+    const user = makeAuthUser()
+
+    vi.mocked(authService.login).mockRejectedValue(new Error('Database connection failed'))
+
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: user.email,
+      password: 'password123',
+    })
+
+    expect(response.status).toBe(500)
+
+    expect(response.body).toEqual({
+      message: 'Internal server error',
+      code: 'INTERNAL_SERVER_ERROR',
     })
   })
 })
@@ -228,6 +300,7 @@ describe('GET /api/v1/auth/me', () => {
 
     expect(response.body).toEqual({
       message: 'Authentication required',
+      code: 'AUTHENTICATION_REQUIRED',
     })
 
     expect(getUserIdFromSession).not.toHaveBeenCalled()
@@ -246,6 +319,7 @@ describe('GET /api/v1/auth/me', () => {
 
     expect(response.body).toEqual({
       message: 'Invalid or expired session',
+      code: 'INVALID_SESSION',
     })
 
     expect(userService.getUserById).not.toHaveBeenCalled()
@@ -266,7 +340,8 @@ describe('GET /api/v1/auth/me', () => {
     expect(response.status).toBe(401)
 
     expect(response.body).toEqual({
-      message: 'User no longer exists',
+      message: 'Authentication required',
+      code: 'AUTHENTICATION_REQUIRED',
     })
   })
 })

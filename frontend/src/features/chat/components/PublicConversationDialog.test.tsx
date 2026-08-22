@@ -5,7 +5,7 @@ import { PublicConversationDialog } from './PublicConversationDialog'
 
 import { getPublicConversations } from '../api/chat.api'
 
-import type { Conversation } from '../types/conversation.types'
+import type { Conversation } from '@kubechat/contracts'
 
 vi.mock('../api/chat.api', () => ({
   getPublicConversations: vi.fn(),

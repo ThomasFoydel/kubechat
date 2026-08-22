@@ -1,3 +1,4 @@
+import { config } from '../../config/env'
 import { isDatabaseHealthy, isRedisHealthy } from './repository'
 
 export async function getReadinessStatus() {
@@ -13,8 +14,8 @@ export async function getReadinessStatus() {
 
   try {
     await isRedisHealthy()
-  } catch (err) {
-    console.error(err)
+  } catch (error) {
+    console.error(error)
     redis = 'unavailable'
   }
 
@@ -23,6 +24,9 @@ export async function getReadinessStatus() {
   return {
     status: healthy ? 'ok' : 'error',
     service: 'kubechat-api',
+    environment: config.nodeEnv,
+    instance: config.websocketNodeId,
+    websocketNode: config.websocketNodeId,
     database,
     redis,
     timestamp: new Date().toISOString(),

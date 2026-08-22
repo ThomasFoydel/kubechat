@@ -12,7 +12,7 @@ import {
 
 import { ChatWebSocketClient, type WebSocketConnectionStatus } from '../api/chat-websocket.client'
 
-import type { Message } from '../types/conversation.types'
+import type { Message } from '@kubechat/contracts'
 
 interface ChatContextValue {
   messages: Message[]
