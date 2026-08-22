@@ -16,4 +16,4 @@ spec:
           command:
             - /bin/sh
             - -c
-            - npx prisma migrate deploy
+            - cd api && npx prisma migrate deploy
