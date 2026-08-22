@@ -54,11 +54,23 @@ export function ConfirmationDialog({
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isConfirming}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isConfirming}
+            className="cursor-pointer transition-colors hover:bg-white/10"
+          >
             {cancelLabel}
           </Button>
 
-          <Button type="button" variant="destructive" onClick={onConfirm} disabled={isConfirming}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onConfirm}
+            disabled={isConfirming}
+            className="cursor-pointer border-destructive text-destructive transition-colors hover:bg-white/10"
+          >
             {isConfirming ? 'Deleting...' : confirmLabel}
           </Button>
         </div>

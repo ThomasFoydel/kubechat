@@ -93,6 +93,36 @@ async function addMember(conversationId: string, userId: string): Promise<void> 
   })
 }
 
+async function getMemberRole(
+  conversationId: string,
+  userId: string,
+): Promise<'OWNER' | 'ADMIN' | 'MEMBER' | null> {
+  const membership = await prisma.conversationMember.findUnique({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
+      },
+    },
+    select: {
+      role: true,
+    },
+  })
+
+  return membership?.role ?? null
+}
+
+async function removeMember(conversationId: string, userId: string): Promise<void> {
+  await prisma.conversationMember.delete({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
+      },
+    },
+  })
+}
+
 async function isAdmin(conversationId: string, userId: string): Promise<boolean> {
   const membership = await prisma.conversationMember.findUnique({
     where: {
@@ -137,6 +167,8 @@ export const conversationRepository = {
   getPublicConversations,
   isMember,
   addMember,
+  getMemberRole,
+  removeMember,
   isAdmin,
   updateConversation,
   deleteConversation,

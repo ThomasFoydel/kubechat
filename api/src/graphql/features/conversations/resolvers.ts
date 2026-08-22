@@ -33,7 +33,11 @@ export const conversationFieldResolvers: Pick<
 
 export const conversationMutationResolvers: Pick<
   MutationResolvers<GraphQLContext>,
-  'createConversation' | 'updateConversation' | 'deleteConversation' | 'joinConversation'
+  | 'createConversation'
+  | 'updateConversation'
+  | 'deleteConversation'
+  | 'joinConversation'
+  | 'leaveConversation'
 > = {
   createConversation: async (_parent, args, context) => {
     if (!context.userId) {
@@ -73,5 +77,15 @@ export const conversationMutationResolvers: Pick<
     }
 
     return conversationService.joinConversation(args.id, context.userId)
+  },
+
+  leaveConversation: async (_parent, args, context) => {
+    if (!context.userId) {
+      throw authenticationRequired()
+    }
+
+    await conversationService.leaveConversation(args.id, context.userId)
+
+    return true
   },
 }

@@ -7,6 +7,7 @@ import {
   deleteConversation,
   getConversations,
   joinConversation,
+  leaveConversation,
 } from '../api/chat.api'
 
 import type { ConversationVisibility } from '@kubechat/contracts'
@@ -55,6 +56,18 @@ export function useConversations() {
     },
   })
 
+  const leaveMutation = useMutation({
+    mutationFn: leaveConversation,
+
+    onSuccess: (_, conversationId) => {
+      queryClient.setQueryData(
+        CONVERSATIONS_QUERY_KEY,
+        (current: Awaited<ReturnType<typeof getConversations>> | undefined) =>
+          (current ?? []).filter((conversation) => conversation.id !== conversationId),
+      )
+    },
+  })
+
   const deleteMutation = useMutation({
     mutationFn: deleteConversation,
 
@@ -78,6 +91,10 @@ export function useConversations() {
     return joinMutation.mutateAsync(conversationId)
   }
 
+  async function handleLeaveConversation(conversationId: string) {
+    return leaveMutation.mutateAsync(conversationId)
+  }
+
   async function handleDeleteConversation(conversationId: string) {
     return deleteMutation.mutateAsync(conversationId)
   }
@@ -98,6 +115,12 @@ export function useConversations() {
     isJoining: joinMutation.isPending,
 
     joinError: joinMutation.error,
+
+    leaveConversation: handleLeaveConversation,
+
+    isLeaving: leaveMutation.isPending,
+
+    leaveError: leaveMutation.error,
 
     deleteConversation: handleDeleteConversation,
 

@@ -72,6 +72,14 @@ export function conversationNotPublic(): AppError {
   })
 }
 
+export function conversationCannotLeave(): AppError {
+  return new AppError({
+    code: 'CONVERSATION_CANNOT_LEAVE',
+    statusCode: 403,
+    message: 'Owners and admins cannot leave a conversation',
+  })
+}
+
 export function validationError(details: unknown): AppError {
   return new AppError({
     code: 'VALIDATION_ERROR',

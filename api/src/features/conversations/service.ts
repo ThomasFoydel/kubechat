@@ -3,7 +3,12 @@ import {
   CreateConversationInput,
   UpdateConversationInput,
 } from '@kubechat/contracts'
-import { conversationNotFound, conversationNotPublic, forbidden } from '../../errors/errors'
+import {
+  conversationCannotLeave,
+  conversationNotFound,
+  conversationNotPublic,
+  forbidden,
+} from '../../errors/errors'
 import { conversationRepository } from './repository'
 
 function toConversationResponse(
@@ -113,6 +118,20 @@ async function joinConversation(id: string, userId: string): Promise<Conversatio
   return mapConversationResponse(conversation)
 }
 
+async function leaveConversation(id: string, userId: string): Promise<void> {
+  const role = await conversationRepository.getMemberRole(id, userId)
+
+  if (role === null) {
+    throw forbidden('You are not a member of this conversation')
+  }
+
+  if (role === 'OWNER' || role === 'ADMIN') {
+    throw conversationCannotLeave()
+  }
+
+  await conversationRepository.removeMember(id, userId)
+}
+
 async function canAccessConversation(id: string, userId: string): Promise<boolean> {
   const conversation = await conversationRepository.getConversationById(id)
 
@@ -139,6 +158,7 @@ export const conversationService = {
   updateConversation,
   deleteConversation,
   joinConversation,
+  leaveConversation,
   canAccessConversation,
   isAdmin,
 }
