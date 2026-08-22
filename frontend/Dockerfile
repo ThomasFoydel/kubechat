@@ -28,10 +28,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/frontend/public ./public
-COPY --from=builder /app/frontend/.next ./.next
-COPY --from=builder /app/frontend/node_modules ./node_modules
-COPY --from=builder /app/frontend/package.json ./package.json
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/frontend/package.json ./frontend/package.json
+COPY --from=builder /app/frontend/public ./frontend/public
+COPY --from=builder /app/frontend/.next ./frontend/.next
+
+WORKDIR /app/frontend
 
 EXPOSE 3000
 
