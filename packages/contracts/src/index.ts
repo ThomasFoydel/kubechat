@@ -37,6 +37,7 @@ export {
   userPresenceSchema,
   userResponseSchema,
   userWithPresenceResponseSchema,
+  type PublicUserResponse,
   type User,
   type UserPresence,
   type UserResponse,

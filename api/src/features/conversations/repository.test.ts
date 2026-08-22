@@ -28,9 +28,7 @@ describe('conversationRepository', () => {
         },
       ]
 
-      vi.mocked(prisma.conversation.findMany).mockResolvedValue(
-        conversations as never,
-      )
+      vi.mocked(prisma.conversation.findMany).mockResolvedValue(conversations as never)
 
       const result = await conversationRepository.getPublicConversations()
 
@@ -58,13 +56,9 @@ describe('conversationRepository', () => {
         },
       ]
 
-      vi.mocked(prisma.conversation.findMany).mockResolvedValue(
-        conversations as never,
-      )
+      vi.mocked(prisma.conversation.findMany).mockResolvedValue(conversations as never)
 
-      const result = await conversationRepository.getPublicConversations(
-        'kubernetes',
-      )
+      const result = await conversationRepository.getPublicConversations('kubernetes')
 
       expect(prisma.conversation.findMany).toHaveBeenCalledWith({
         where: {
@@ -92,13 +86,9 @@ describe('conversationRepository', () => {
         updatedAt: new Date('2026-01-02'),
       }))
 
-      vi.mocked(prisma.conversation.findMany).mockResolvedValue(
-        conversations as never,
-      )
+      vi.mocked(prisma.conversation.findMany).mockResolvedValue(conversations as never)
 
-      const result = await conversationRepository.getPublicConversations(
-        'conversation',
-      )
+      const result = await conversationRepository.getPublicConversations('conversation')
 
       expect(prisma.conversation.findMany).toHaveBeenCalledWith({
         where: {

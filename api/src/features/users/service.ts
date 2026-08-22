@@ -1,7 +1,11 @@
-import type { UserResponse, UserWithPresenceResponse } from '@kubechat/contracts'
+import type {
+  PublicUserResponse,
+  UserResponse,
+  UserWithPresenceResponse,
+} from '@kubechat/contracts'
 
 import { getUserPresence } from '../../db/redisPresence'
-import { toUserResponse } from './mapper'
+import { toPublicUserResponse, toUserResponse } from './mapper'
 import { userRepository } from './repository'
 
 interface CreateUserInput {
@@ -33,7 +37,7 @@ async function getUsers(): Promise<UserWithPresenceResponse[]> {
 
   return Promise.all(
     users.map(async (user) => {
-      const response = toUserResponse(user)
+      const response = toPublicUserResponse(user)
       const presence = await getUserPresence(user.id)
 
       return {

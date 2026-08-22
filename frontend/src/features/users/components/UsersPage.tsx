@@ -2,6 +2,14 @@
 
 import { useUsers } from '../hooks/useUsers'
 
+function formatNodes(nodes: string[]): string {
+  if (nodes.length === 0) {
+    return '—'
+  }
+
+  return nodes.join(', ')
+}
+
 export function UsersPage() {
   const { users, isLoading, isError } = useUsers()
 
@@ -31,7 +39,7 @@ export function UsersPage() {
         <div className="overflow-hidden rounded-lg border">
           <div className="grid grid-cols-[1fr_1fr_120px] border-b px-6 py-3 text-sm font-medium text-muted-foreground">
             <span>Username</span>
-            <span>Email</span>
+            <span>Pod</span>
             <span>Status</span>
           </div>
 
@@ -42,7 +50,9 @@ export function UsersPage() {
             >
               <span className="font-medium">{user.username}</span>
 
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <span className="truncate text-sm text-muted-foreground">
+                {formatNodes(user.presence.nodes)}
+              </span>
 
               <span
                 className={`text-sm font-medium ${

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { makeDatabaseUser, makeUser } from '../../test/factories/user'
 
-import { toUserResponse } from './mapper'
+import { toPublicUserResponse, toUserResponse } from './mapper'
 import { userRepository } from './repository'
 import { userService } from './service'
 
@@ -16,6 +16,7 @@ vi.mock('./repository', () => ({
 }))
 
 vi.mock('./mapper', () => ({
+  toPublicUserResponse: vi.fn(),
   toUserResponse: vi.fn(),
 }))
 
@@ -124,17 +125,14 @@ describe('userService.getUsers', () => {
   it('returns users with their presence information', async () => {
     const repositoryUsers = [makeDatabaseUser(), makeDatabaseUser()]
 
-    const userResponses = repositoryUsers.map((user) =>
-      makeUser({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt.toISOString(),
-      }),
-    )
+    const userResponses = repositoryUsers.map((user) => ({
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt.toISOString(),
+    }))
 
     vi.mocked(userRepository.getUsers).mockResolvedValue(repositoryUsers)
-    vi.mocked(toUserResponse)
+    vi.mocked(toPublicUserResponse)
       .mockReturnValueOnce(userResponses[0])
       .mockReturnValueOnce(userResponses[1])
 
@@ -151,7 +149,7 @@ describe('userService.getUsers', () => {
     const result = await userService.getUsers()
 
     expect(userRepository.getUsers).toHaveBeenCalledOnce()
-    expect(toUserResponse).toHaveBeenCalledTimes(2)
+    expect(toPublicUserResponse).toHaveBeenCalledTimes(2)
 
     expect(getUserPresence).toHaveBeenCalledWith(repositoryUsers[0].id)
     expect(getUserPresence).toHaveBeenCalledWith(repositoryUsers[1].id)
@@ -180,7 +178,7 @@ describe('userService.getUsers', () => {
     const result = await userService.getUsers()
 
     expect(result).toEqual([])
-    expect(toUserResponse).not.toHaveBeenCalled()
+    expect(toPublicUserResponse).not.toHaveBeenCalled()
     expect(getUserPresence).not.toHaveBeenCalled()
   })
 })

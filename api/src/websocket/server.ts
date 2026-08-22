@@ -2,7 +2,11 @@ import { randomUUID } from 'crypto'
 import { IncomingMessage } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 
-import { registerUserPresence, unregisterUserPresence } from '../db/redisPresence'
+import {
+  refreshUserPresence,
+  registerUserPresence,
+  unregisterUserPresence,
+} from '../db/redisPresence'
 import {
   initializeRedisPubSub,
   MessageCreatedEvent,
@@ -21,6 +25,8 @@ import { WebSocketConnectionManager } from './connections'
 import type { ClientMessage, ServerMessage } from '@kubechat/contracts'
 
 const websocketPath = '/ws'
+
+const presenceRefreshIntervalMs = 10_000
 
 const connectionManager = new WebSocketConnectionManager()
 
@@ -174,11 +180,19 @@ async function handleSocketClose(
   await unregisterUserPresence(userId, connectionId)
 }
 
-async function refreshNodeLeases(): Promise<void> {
+async function refreshLeases(): Promise<void> {
   const conversations = connectionManager.getSubscribedConversationIds()
 
   await Promise.all(
     conversations.map((conversationId) => refreshConversationNodeLease(conversationId)),
+  )
+}
+
+async function refreshUserLeases(): Promise<void> {
+  const connections = connectionManager.getUserConnections()
+
+  await Promise.all(
+    connections.map(({ userId, connectionId }) => refreshUserPresence(userId, connectionId)),
   )
 }
 
@@ -199,6 +213,8 @@ export function createWebSocketServer(): WebSocketServer {
         const connectionId = randomUUID()
 
         await registerUserPresence(userId, connectionId)
+
+        connectionManager.registerUserConnection(userId, connectionId, socket)
 
         socket.on('message', (data) => {
           const message = parseMessage(data)
@@ -222,6 +238,8 @@ export function createWebSocketServer(): WebSocketServer {
         })
 
         socket.on('close', () => {
+          connectionManager.unregisterUserConnection(socket)
+
           void handleSocketClose(socket, userId, connectionId).catch((error) => {
             console.error('WebSocket close cleanup error:', error)
           })
@@ -241,10 +259,14 @@ export async function initializeWebSocketPubSub(): Promise<void> {
   await initializeRedisPubSub(handleMessageCreatedEvent)
 
   leaseRefreshInterval = setInterval(() => {
-    void refreshNodeLeases().catch((error) => {
-      console.error('WebSocket lease refresh error:', error)
+    void refreshLeases().catch((error) => {
+      console.error('WebSocket conversation lease refresh error:', error)
     })
-  }, 10_000)
+
+    void refreshUserLeases().catch((error) => {
+      console.error('WebSocket user presence lease refresh error:', error)
+    })
+  }, presenceRefreshIntervalMs)
 }
 
 export function closeWebSocketConnections(wss: WebSocketServer): void {

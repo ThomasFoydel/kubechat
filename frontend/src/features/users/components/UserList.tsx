@@ -8,6 +8,14 @@ function formatCreatedAt(createdAt: string): string {
   return new Date(createdAt).toLocaleDateString()
 }
 
+function formatNodes(nodes: string[]): string {
+  if (nodes.length === 0) {
+    return '—'
+  }
+
+  return nodes.join(', ')
+}
+
 export function UserList() {
   const { users, isLoading, isError } = useUsers()
 
@@ -27,8 +35,8 @@ export function UserList() {
     <div className="overflow-hidden rounded-lg border">
       <div className="grid grid-cols-[1fr_1fr_1fr_120px] gap-4 border-b px-6 py-3 text-sm font-medium text-muted-foreground">
         <span>User</span>
-        <span>Email</span>
         <span>Created</span>
+        <span>Pod</span>
         <span>Status</span>
       </div>
 
@@ -42,9 +50,11 @@ export function UserList() {
             <p className="truncate text-xs text-muted-foreground">{user.id}</p>
           </div>
 
-          <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-
           <p className="text-sm text-muted-foreground">{formatCreatedAt(user.createdAt)}</p>
+
+          <p className="truncate text-sm text-muted-foreground">
+            {formatNodes(user.presence.nodes)}
+          </p>
 
           <div className="flex items-center gap-2">
             <Circle

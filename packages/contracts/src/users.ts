@@ -11,6 +11,14 @@ export type User = z.infer<typeof userResponseSchema>
 
 export type UserResponse = User
 
+export const publicUserResponseSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  createdAt: z.string(),
+})
+
+export type PublicUserResponse = z.infer<typeof publicUserResponseSchema>
+
 export const userPresenceSchema = z.object({
   online: z.boolean(),
   nodes: z.array(z.string()),
@@ -18,7 +26,7 @@ export const userPresenceSchema = z.object({
 
 export type UserPresence = z.infer<typeof userPresenceSchema>
 
-export const userWithPresenceResponseSchema = userResponseSchema.extend({
+export const userWithPresenceResponseSchema = publicUserResponseSchema.extend({
   presence: userPresenceSchema,
 })
 
