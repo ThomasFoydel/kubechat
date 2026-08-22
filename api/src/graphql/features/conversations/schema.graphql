@@ -31,4 +31,6 @@ extend type Mutation {
   deleteConversation(id: ID!): Boolean!
 
   joinConversation(id: ID!): Conversation!
+
+  leaveConversation(id: ID!): Boolean!
 }

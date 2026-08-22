@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { LogOut, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -34,6 +34,8 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
+
   const {
     conversations,
     isLoading: isLoadingConversations,
@@ -43,6 +45,8 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     isJoining,
     deleteConversation,
     isDeleting,
+    leaveConversation,
+    isLeaving,
   } = useConversations()
 
   const { messages, connectionStatus, sendMessage, sendError } = useChat(conversationId || null)
@@ -107,6 +111,22 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     }
   }
 
+  async function handleLeaveConversation() {
+    if (!conversationId || currentConversation?.isAdmin || isLeaving) {
+      return
+    }
+
+    try {
+      await leaveConversation(conversationId)
+
+      setIsLeaveDialogOpen(false)
+
+      router.push('/chat')
+    } catch (error) {
+      console.error('Failed to leave conversation:', error)
+    }
+  }
+
   const hasConversation = Boolean(conversationId)
 
   return (
@@ -132,19 +152,31 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
             </div>
 
             <div className="flex items-center gap-4">
-              {currentConversation?.isAdmin && (
+              {currentConversation?.isAdmin ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isDeleting}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="cursor-pointer text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 />
                   Delete
                 </Button>
-              )}
+              ) : currentConversation ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsLeaveDialogOpen(true)}
+                  disabled={isLeaving}
+                  className="cursor-pointer text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+                >
+                  <LogOut />
+                  Leave
+                </Button>
+              ) : null}
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span
@@ -204,11 +236,22 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
         open={isDeleteDialogOpen}
         title="Delete conversation?"
         description="This will permanently delete the conversation and all of its messages. This action cannot be undone."
-        confirmLabel="Delete conversation"
+        confirmLabel="Delete Conversation"
         cancelLabel="Cancel"
         onConfirm={handleDeleteConversation}
         onCancel={() => setIsDeleteDialogOpen(false)}
         isConfirming={isDeleting}
+      />
+
+      <ConfirmationDialog
+        open={isLeaveDialogOpen}
+        title="Leave conversation?"
+        description="You will no longer have access to this conversation unless you join it again."
+        confirmLabel="Leave Conversation"
+        cancelLabel="Cancel"
+        onConfirm={handleLeaveConversation}
+        onCancel={() => setIsLeaveDialogOpen(false)}
+        isConfirming={isLeaving}
       />
     </>
   )

@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 
-import type { Conversation, Message, ConversationVisibility } from '@kubechat/contracts'
+import type { Conversation, ConversationVisibility, Message } from '@kubechat/contracts'
 
 interface GraphQLResponse<T> {
   data?: T
@@ -128,6 +128,23 @@ export async function joinConversation(conversationId: string): Promise<Conversa
   )
 
   return response.joinConversation
+}
+
+export async function leaveConversation(conversationId: string): Promise<boolean> {
+  const response = await graphqlRequest<{
+    leaveConversation: boolean
+  }>(
+    `
+      mutation LeaveConversation($id: ID!) {
+        leaveConversation(id: $id)
+      }
+    `,
+    {
+      id: conversationId,
+    },
+  )
+
+  return response.leaveConversation
 }
 
 export async function deleteConversation(conversationId: string): Promise<boolean> {
