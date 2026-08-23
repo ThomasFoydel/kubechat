@@ -159,7 +159,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
                   size="sm"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isDeleting}
-                  className="cursor-pointer text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  className="cursor-pointer text-destructive transition-colors hover:!bg-red-500/10 hover:!text-red-400"
                 >
                   <Trash2 />
                   Delete
@@ -171,7 +171,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
                   size="sm"
                   onClick={() => setIsLeaveDialogOpen(true)}
                   disabled={isLeaving}
-                  className="cursor-pointer text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+                  className="cursor-pointer text-muted-foreground transition-colors hover:!bg-white/10 hover:!text-foreground"
                 >
                   <LogOut />
                   Leave

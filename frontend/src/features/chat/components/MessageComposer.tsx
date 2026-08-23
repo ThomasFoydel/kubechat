@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+
 interface MessageComposerProps {
   message: string
   onMessageChange: (message: string) => void
@@ -25,13 +27,14 @@ export function MessageComposer({
             className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
           />
 
-          <button
+          <Button
             type="submit"
+            variant="outline"
             disabled={disabled || !message.trim()}
-            className="cursor-pointer rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-auto cursor-pointer transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:hover:bg-background"
           >
             Send
-          </button>
+          </Button>
         </div>
 
         {error && <p className="mt-2 text-xs text-destructive">{error}</p>}

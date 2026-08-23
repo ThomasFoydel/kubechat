@@ -114,7 +114,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <button
             type="button"
             aria-label="Close navigation"
-            className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground md:hidden"
             onClick={onClose}
           >
             <X size={20} />
@@ -144,10 +144,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     onClose()
                   }}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? 'bg-muted font-medium text-foreground'
-                      : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                      ? 'bg-muted font-medium text-foreground hover:bg-muted/80'
+                      : 'text-muted-foreground hover:bg-white/10 hover:text-foreground'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 aria-label="New chat"
                 onClick={handleNewChat}
                 disabled={isCreating}
-                className="shrink-0 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className="shrink-0 cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus size={17} />
               </button>
@@ -190,8 +190,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     key={conversation.id}
                     type="button"
                     onClick={() => handleConversationSelect(conversation.id)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                      isSelected ? 'bg-muted' : 'hover:bg-muted/50'
+                    className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                      isSelected
+                        ? 'bg-muted hover:bg-muted/80'
+                        : 'hover:bg-white/10 hover:text-foreground'
                     }`}
                   >
                     <MessageSquare size={17} fill={isSelected ? 'currentColor' : 'none'} />
@@ -213,7 +215,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogOut className="h-4 w-4" />
 

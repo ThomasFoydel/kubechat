@@ -27,8 +27,8 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
   }
 
   * {
@@ -45,5 +45,12 @@
     background: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: var(--font-geist), Arial, Helvetica, sans-serif;
+  }
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }

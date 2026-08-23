@@ -133,11 +133,23 @@ export function NewConversationDialog({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isCreating}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isCreating}
+              className="cursor-pointer transition-colors hover:bg-white/10"
+            >
               Cancel
             </Button>
 
-            <Button type="submit" disabled={isCreating || !title.trim()}>
+            <Button
+              type="submit"
+              variant="outline"
+              onClick={undefined}
+              disabled={isCreating || !title.trim()}
+              className="cursor-pointer transition-colors hover:bg-white/10"
+            >
               {isCreating ? 'Creating...' : 'Create conversation'}
             </Button>
           </div>
