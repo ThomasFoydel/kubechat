@@ -49,7 +49,9 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
     isLeaving,
   } = useConversations()
 
-  const { messages, connectionStatus, sendMessage, sendError } = useChat(conversationId || null)
+  const { messages, connectionStatus, sendMessage, sendError, isSubscribed } = useChat(
+    conversationId || null,
+  )
 
   const currentConversation = conversations.find(
     (conversation) => conversation.id === conversationId,
@@ -212,7 +214,7 @@ export function ChatPage({ conversationId = '' }: ChatPageProps) {
             message={message}
             onMessageChange={setMessage}
             onSubmit={handleSubmit}
-            disabled={!conversationId || connectionStatus !== 'connected'}
+            disabled={!conversationId || connectionStatus !== 'connected' || !isSubscribed}
             error={sendError}
           />
         </section>

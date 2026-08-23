@@ -158,7 +158,22 @@ async function handleMessage(
       content: parsed.data.content,
     })
 
-    await publishMessageCreated(message.conversationId, createdMessage, message.clientMessageId)
+    const serverMessage: ServerMessage = {
+      type: 'message.created',
+      message: createdMessage,
+      clientMessageId: message.clientMessageId,
+    }
+
+    connectionManager.broadcast(
+      message.conversationId,
+      JSON.stringify(serverMessage),
+    )
+
+    await publishMessageCreated(
+      message.conversationId,
+      createdMessage,
+      message.clientMessageId,
+    )
   }
 }
 

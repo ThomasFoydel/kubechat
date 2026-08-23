@@ -11,6 +11,7 @@ export interface UseChatResult {
   connectionStatus: WebSocketConnectionStatus
   sendMessage: (content: string) => boolean
   sendError: string | null
+  isSubscribed: boolean
 }
 
 export function useChat(conversationId: string | null): UseChatResult {
@@ -19,6 +20,7 @@ export function useChat(conversationId: string | null): UseChatResult {
     connectionStatus,
     sendMessage: sendChatMessage,
     sendError,
+    subscribedConversations,
     subscribe,
     unsubscribe,
     setMessages,
@@ -49,7 +51,21 @@ export function useChat(conversationId: string | null): UseChatResult {
     getMessages(conversationId)
       .then((loadedMessages) => {
         if (!cancelled) {
-          setMessages(loadedMessages)
+          setMessages((currentMessages) => {
+            const messagesById = new Map(
+              loadedMessages.map((message) => [message.id, message]),
+            )
+
+            for (const message of currentMessages) {
+              messagesById.set(message.id, message)
+            }
+
+            return Array.from(messagesById.values()).sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
+            )
+          })
         }
       })
       .catch((error) => {
@@ -80,5 +96,6 @@ export function useChat(conversationId: string | null): UseChatResult {
     connectionStatus,
     sendMessage,
     sendError,
+    isSubscribed: conversationId ? subscribedConversations.has(conversationId) : false,
   }
 }
