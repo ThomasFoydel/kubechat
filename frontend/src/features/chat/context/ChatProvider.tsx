@@ -19,9 +19,10 @@ interface ChatContextValue {
   connectionStatus: WebSocketConnectionStatus
   sendMessage: (conversationId: string, content: string) => boolean
   sendError: string | null
+  subscribedConversations: Set<string>
   subscribe: (conversationId: string) => void
   unsubscribe: (conversationId: string) => void
-  setMessages: (messages: Message[]) => void
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   clearSendError: () => void
 }
 
@@ -38,6 +39,8 @@ export function ChatProvider({ children }: ChatProviderProps) {
     useState<WebSocketConnectionStatus>('disconnected')
 
   const [sendError, setSendError] = useState<string | null>(null)
+
+  const [subscribedConversations, setSubscribedConversations] = useState<Set<string>>(new Set())
 
   const clientRef = useRef<ChatWebSocketClient | null>(null)
 
@@ -73,6 +76,18 @@ export function ChatProvider({ children }: ChatProviderProps) {
         }
       },
 
+      onConversationSubscribed: (conversationId) => {
+        if (!active) {
+          return
+        }
+
+        setSubscribedConversations((current) => {
+          const next = new Set(current)
+          next.add(conversationId)
+          return next
+        })
+      },
+
       onStatusChange: (status) => {
         if (!active) {
           return
@@ -91,6 +106,8 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
       client.disconnect()
 
+      setSubscribedConversations(new Set())
+
       if (clientRef.current === client) {
         clientRef.current = null
       }
@@ -98,10 +115,22 @@ export function ChatProvider({ children }: ChatProviderProps) {
   }, [])
 
   const subscribe = useCallback((conversationId: string) => {
+    setSubscribedConversations((current) => {
+      const next = new Set(current)
+      next.delete(conversationId)
+      return next
+    })
+
     clientRef.current?.subscribe(conversationId)
   }, [])
 
   const unsubscribe = useCallback((conversationId: string) => {
+    setSubscribedConversations((current) => {
+      const next = new Set(current)
+      next.delete(conversationId)
+      return next
+    })
+
     clientRef.current?.unsubscribe(conversationId)
   }, [])
 
@@ -151,6 +180,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
         connectionStatus,
         sendMessage,
         sendError,
+        subscribedConversations,
         subscribe,
         unsubscribe,
         setMessages,

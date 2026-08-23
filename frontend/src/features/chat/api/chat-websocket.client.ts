@@ -6,6 +6,7 @@ export type WebSocketConnectionStatus =
 export interface ChatWebSocketClientOptions {
   onMessage: (message: ServerMessage) => void
   onStatusChange: (status: WebSocketConnectionStatus) => void
+  onConversationSubscribed: (conversationId: string) => void
 }
 
 const INITIAL_RECONNECT_DELAY = 1_000
@@ -120,6 +121,10 @@ export class ChatWebSocketClient {
         console.error('Received invalid WebSocket message')
 
         return
+      }
+
+      if (message.type === 'conversation.subscribed') {
+        this.options.onConversationSubscribed(message.conversationId)
       }
 
       this.options.onMessage(message)
