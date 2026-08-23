@@ -35,9 +35,7 @@ export function UsersPage() {
         )}
 
         {!isLoading && !isError && users.length === 0 && (
-          <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-            No users found.
-          </div>
+          <div className="rounded-lg border p-6 text-sm text-muted-foreground">No users found.</div>
         )}
 
         {!isLoading && !isError && users.length > 0 && (
