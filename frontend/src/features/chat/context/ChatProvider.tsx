@@ -40,14 +40,31 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
   const [sendError, setSendError] = useState<string | null>(null)
 
-  const [subscribedConversations, setSubscribedConversations] = useState<Set<string>>(new Set())
+  const [subscribedConversations, setSubscribedConversations] = useState<Set<string>>(
+    new Set(),
+  )
 
   const clientRef = useRef<ChatWebSocketClient | null>(null)
+
+  const requestedSubscriptionsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     let active = true
 
     const client = new ChatWebSocketClient({
+      onConversationSubscribed: (conversationId) => {
+        if (!active) {
+          return
+        }
+
+        setSubscribedConversations((current) => {
+          const next = new Set(current)
+          next.add(conversationId)
+
+          return next
+        })
+      },
+
       onMessage: (message) => {
         if (!active) {
           return
@@ -76,21 +93,13 @@ export function ChatProvider({ children }: ChatProviderProps) {
         }
       },
 
-      onConversationSubscribed: (conversationId) => {
+      onStatusChange: (status) => {
         if (!active) {
           return
         }
 
-        setSubscribedConversations((current) => {
-          const next = new Set(current)
-          next.add(conversationId)
-          return next
-        })
-      },
-
-      onStatusChange: (status) => {
-        if (!active) {
-          return
+        if (status !== 'connected') {
+          setSubscribedConversations(new Set())
         }
 
         setConnectionStatus(status)
@@ -98,6 +107,10 @@ export function ChatProvider({ children }: ChatProviderProps) {
     })
 
     clientRef.current = client
+
+    for (const conversationId of requestedSubscriptionsRef.current) {
+      client.subscribe(conversationId)
+    }
 
     client.connect()
 
@@ -115,9 +128,12 @@ export function ChatProvider({ children }: ChatProviderProps) {
   }, [])
 
   const subscribe = useCallback((conversationId: string) => {
+    requestedSubscriptionsRef.current.add(conversationId)
+
     setSubscribedConversations((current) => {
       const next = new Set(current)
       next.delete(conversationId)
+
       return next
     })
 
@@ -125,9 +141,12 @@ export function ChatProvider({ children }: ChatProviderProps) {
   }, [])
 
   const unsubscribe = useCallback((conversationId: string) => {
+    requestedSubscriptionsRef.current.delete(conversationId)
+
     setSubscribedConversations((current) => {
       const next = new Set(current)
       next.delete(conversationId)
+
       return next
     })
 
@@ -150,6 +169,12 @@ export function ChatProvider({ children }: ChatProviderProps) {
         return false
       }
 
+      if (!subscribedConversations.has(conversationId)) {
+        setSendError('Chat subscription is not ready.')
+
+        return false
+      }
+
       const clientMessageId = crypto.randomUUID()
 
       setSendError(null)
@@ -166,7 +191,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
         return false
       }
     },
-    [connectionStatus],
+    [connectionStatus, subscribedConversations],
   )
 
   const clearSendError = useCallback(() => {
