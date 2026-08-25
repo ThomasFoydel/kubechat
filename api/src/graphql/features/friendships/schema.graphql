@@ -22,4 +22,5 @@ extend type Mutation {
   acceptFriendRequest(id: ID!): Friendship!
   rejectFriendRequest(id: ID!): Friendship!
   cancelFriendRequest(id: ID!): Boolean!
+  removeFriend(id: ID!): Boolean!
 }

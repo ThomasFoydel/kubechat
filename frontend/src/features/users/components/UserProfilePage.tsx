@@ -1,17 +1,15 @@
 'use client'
 
-import Link from 'next/link'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Circle } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Circle } from 'lucide-react'
 import type { FriendshipResponse } from '@kubechat/contracts'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useFriendships } from '@/features/friendships/hooks/useFriendships'
+import { ConfirmationDialog } from '@/features/chat/components/ConfirmationDialog'
 
 import { getUserById } from '../api/users.api'
-import {
-  FRIENDSHIPS_QUERY_KEY,
-  useFriendships,
-} from '@/features/friendships/hooks/useFriendships'
 
 interface UserProfilePageProps {
   userId: string
@@ -19,7 +17,7 @@ interface UserProfilePageProps {
 
 export function UserProfilePage({ userId }: UserProfilePageProps) {
   const { user: currentUser } = useAuth()
-  const queryClient = useQueryClient()
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
   const userQuery = useQuery({
     queryKey: ['users', userId],
@@ -33,6 +31,8 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
+    cancelFriendRequest,
+    removeFriend,
     isMutating,
   } = useFriendships()
 
@@ -58,6 +58,21 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
     friendship: FriendshipResponse,
   ) {
     await rejectFriendRequest(friendship.id)
+  }
+
+  async function handleCancelFriendRequest(
+    friendship: FriendshipResponse,
+  ) {
+    await cancelFriendRequest(friendship.id)
+  }
+
+  async function handleRemoveFriend() {
+    if (!friendship) {
+      return
+    }
+
+    await removeFriend(friendship.id)
+    setIsRemoveDialogOpen(false)
   }
 
   function getFriendshipState() {
@@ -108,12 +123,6 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
     return (
       <div className="p-6">
         <p className="text-sm text-destructive">Failed to load user.</p>
-        <Link
-          href="/users"
-          className="mt-4 inline-block text-sm underline"
-        >
-          Back to users
-        </Link>
       </div>
     )
   }
@@ -122,14 +131,6 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
 
   return (
     <div className="h-full overflow-y-auto p-6">
-      <Link
-        href="/users"
-        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to users
-      </Link>
-
       <div className="max-w-2xl rounded-lg border">
         <div className="border-b p-6">
           <div className="flex items-center gap-3">
@@ -174,56 +175,91 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
                     type="button"
                     onClick={handleSendFriendRequest}
                     disabled={isMutating}
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                    className="cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isMutating ? 'Sending...' : 'Add Friend'}
                   </button>
                 )}
 
-                {friendshipState === 'outgoing' && (
+                {friendshipState === 'outgoing' && friendship && (
                   <div>
                     <p className="text-sm text-muted-foreground">
                       Friend request pending.
                     </p>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCancelFriendRequest(friendship)}
+                      disabled={isMutating}
+                      className="mt-3 cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isMutating
+                        ? 'Cancelling...'
+                        : 'Cancel Friend Request'}
+                    </button>
                   </div>
                 )}
 
                 {friendshipState === 'incoming' && friendship && (
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleAcceptFriendRequest(friendship)
-                      }
-                      disabled={isMutating}
-                      className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                    >
-                      Accept
-                    </button>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {user.username} sent you a friend request.
+                    </p>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleRejectFriendRequest(friendship)
-                      }
-                      disabled={isMutating}
-                      className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50"
-                    >
-                      Reject
-                    </button>
+                    <div className="mt-3 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptFriendRequest(friendship)}
+                        disabled={isMutating}
+                        className="cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Accept
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRejectFriendRequest(friendship)}
+                        disabled={isMutating}
+                        className="cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                {friendshipState === 'friends' && (
-                  <p className="text-sm font-medium">
-                    Friends
-                  </p>
+                {friendshipState === 'friends' && friendship && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      You are friends with this user.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsRemoveDialogOpen(true)}
+                      disabled={isMutating}
+                      className="mt-3 cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Remove Friend
+                    </button>
+                  </div>
                 )}
               </>
             )}
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        open={isRemoveDialogOpen}
+        title="Remove friend?"
+        description={`Are you sure you want to remove ${user.username} as a friend?`}
+        confirmLabel="Remove Friend"
+        cancelLabel="Cancel"
+        onConfirm={handleRemoveFriend}
+        onCancel={() => setIsRemoveDialogOpen(false)}
+        isConfirming={isMutating}
+      />
     </div>
   )
 }

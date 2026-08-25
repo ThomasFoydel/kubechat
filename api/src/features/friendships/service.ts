@@ -126,6 +126,33 @@ async function cancelFriendRequest(
   return true
 }
 
+async function removeFriend(
+  friendshipId: string,
+  userId: string,
+): Promise<boolean> {
+  const friendships = await friendshipRepository.getFriendshipsForUser(userId)
+  const friendship = friendships.find((item) => item.id === friendshipId)
+
+  if (!friendship) {
+    throw forbidden('You do not have permission to remove this friendship')
+  }
+
+  if (
+    friendship.requesterId !== userId &&
+    friendship.recipientId !== userId
+  ) {
+    throw forbidden('You do not have permission to remove this friendship')
+  }
+
+  if (friendship.status !== 'ACCEPTED') {
+    throw forbidden('This friendship is not active')
+  }
+
+  await friendshipRepository.deleteFriendship(friendshipId)
+
+  return true
+}
+
 async function getUserFriendships(userId: string): Promise<FriendshipResponse[]> {
   const friendships = await friendshipRepository.getFriendshipsForUser(userId)
 
@@ -137,5 +164,6 @@ export const friendshipService = {
   acceptFriendRequest,
   rejectFriendRequest,
   cancelFriendRequest,
+  removeFriend,
   getUserFriendships,
 }

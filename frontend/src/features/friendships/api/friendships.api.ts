@@ -131,3 +131,18 @@ export async function cancelFriendRequest(id: string): Promise<boolean> {
 
   return response.cancelFriendRequest
 }
+
+export async function removeFriend(id: string): Promise<boolean> {
+  const response = await graphqlRequest<{
+    removeFriend: boolean
+  }>(
+    `
+      mutation RemoveFriend($id: ID!) {
+        removeFriend(id: $id)
+      }
+    `,
+    { id },
+  )
+
+  return response.removeFriend
+}

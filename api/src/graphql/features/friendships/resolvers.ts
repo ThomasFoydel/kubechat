@@ -79,4 +79,14 @@ export const friendshipMutationResolvers: MutationResolvers<GraphQLContext> = {
 
     return friendship
   },
+
+  removeFriend: async (_parent, args, context) => {
+    if (!context.userId) {
+      throw authenticationRequired()
+    }
+
+    const friendship = await friendshipService.removeFriend(args.id, context.userId)
+
+    return friendship
+  },
 }

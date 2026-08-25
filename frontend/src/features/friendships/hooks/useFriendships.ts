@@ -7,6 +7,7 @@ import {
   cancelFriendRequest,
   getFriendships,
   rejectFriendRequest,
+  removeFriend,
   sendFriendRequest,
 } from '../api/friendships.api'
 
@@ -28,22 +29,27 @@ export function useFriendships() {
 
   const sendMutation = useMutation({
     mutationFn: sendFriendRequest,
-    onSuccess: invalidate,
+    onSettled: invalidate,
   })
 
   const acceptMutation = useMutation({
     mutationFn: acceptFriendRequest,
-    onSuccess: invalidate,
+    onSettled: invalidate,
   })
 
   const rejectMutation = useMutation({
     mutationFn: rejectFriendRequest,
-    onSuccess: invalidate,
+    onSettled: invalidate,
   })
 
   const cancelMutation = useMutation({
     mutationFn: cancelFriendRequest,
-    onSuccess: invalidate,
+    onSettled: invalidate,
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: removeFriend,
+    onSettled: invalidate,
   })
 
   return {
@@ -54,10 +60,12 @@ export function useFriendships() {
     acceptFriendRequest: acceptMutation.mutateAsync,
     rejectFriendRequest: rejectMutation.mutateAsync,
     cancelFriendRequest: cancelMutation.mutateAsync,
+    removeFriend: removeMutation.mutateAsync,
     isMutating:
       sendMutation.isPending ||
       acceptMutation.isPending ||
       rejectMutation.isPending ||
-      cancelMutation.isPending,
+      cancelMutation.isPending ||
+      removeMutation.isPending,
   }
 }

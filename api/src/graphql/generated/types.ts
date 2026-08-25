@@ -69,6 +69,7 @@ export type Mutation = {
   joinConversation: Conversation;
   leaveConversation: Scalars['Boolean']['output'];
   rejectFriendRequest: Friendship;
+  removeFriend: Scalars['Boolean']['output'];
   sendFriendRequest: Friendship;
   updateConversation: Conversation;
 };
@@ -105,6 +106,11 @@ export type MutationLeaveConversationArgs = {
 
 
 export type MutationRejectFriendRequestArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveFriendArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -291,6 +297,7 @@ export type MutationResolvers<ContextType = GraphQLContext, ParentType extends R
   joinConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationJoinConversationArgs, 'id'>>;
   leaveConversation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveConversationArgs, 'id'>>;
   rejectFriendRequest?: Resolver<ResolversTypes['Friendship'], ParentType, ContextType, RequireFields<MutationRejectFriendRequestArgs, 'id'>>;
+  removeFriend?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRemoveFriendArgs, 'id'>>;
   sendFriendRequest?: Resolver<ResolversTypes['Friendship'], ParentType, ContextType, RequireFields<MutationSendFriendRequestArgs, 'userId'>>;
   updateConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationUpdateConversationArgs, 'id' | 'input'>>;
 }>;
