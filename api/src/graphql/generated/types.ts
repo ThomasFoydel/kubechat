@@ -34,6 +34,22 @@ export type CreateConversationInput = {
   visibility?: InputMaybe<ConversationVisibility>;
 };
 
+export type Friendship = {
+  __typename?: 'Friendship';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  recipientId: Scalars['ID']['output'];
+  requesterId: Scalars['ID']['output'];
+  status: FriendshipStatus;
+  updatedAt: Scalars['String']['output'];
+};
+
+export enum FriendshipStatus {
+  Accepted = 'ACCEPTED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
+
 export type Message = {
   __typename?: 'Message';
   content: Scalars['String']['output'];
@@ -46,11 +62,25 @@ export type Message = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptFriendRequest: Friendship;
+  cancelFriendRequest: Scalars['Boolean']['output'];
   createConversation: Conversation;
   deleteConversation: Scalars['Boolean']['output'];
   joinConversation: Conversation;
   leaveConversation: Scalars['Boolean']['output'];
+  rejectFriendRequest: Friendship;
+  sendFriendRequest: Friendship;
   updateConversation: Conversation;
+};
+
+
+export type MutationAcceptFriendRequestArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCancelFriendRequestArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -74,6 +104,16 @@ export type MutationLeaveConversationArgs = {
 };
 
 
+export type MutationRejectFriendRequestArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationSendFriendRequestArgs = {
+  userId: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateConversationArgs = {
   id: Scalars['ID']['input'];
   input: UpdateConversationInput;
@@ -83,6 +123,7 @@ export type Query = {
   __typename?: 'Query';
   conversation?: Maybe<Conversation>;
   conversations: Array<Conversation>;
+  friendships: Array<Friendship>;
   me?: Maybe<User>;
   publicConversations: Array<Conversation>;
 };
@@ -188,6 +229,8 @@ export type ResolversTypes = ResolversObject<{
   Conversation: ResolverTypeWrapper<ConversationResponse>;
   ConversationVisibility: ConversationVisibility;
   CreateConversationInput: CreateConversationInput;
+  Friendship: ResolverTypeWrapper<Friendship>;
+  FriendshipStatus: FriendshipStatus;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Message: ResolverTypeWrapper<Message>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
@@ -202,6 +245,7 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean']['output'];
   Conversation: ConversationResponse;
   CreateConversationInput: CreateConversationInput;
+  Friendship: Friendship;
   ID: Scalars['ID']['output'];
   Message: Message;
   Mutation: Record<PropertyKey, never>;
@@ -221,6 +265,15 @@ export type ConversationResolvers<ContextType = GraphQLContext, ParentType exten
   visibility?: Resolver<ResolversTypes['ConversationVisibility'], ParentType, ContextType>;
 }>;
 
+export type FriendshipResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Friendship'] = ResolversParentTypes['Friendship']> = ResolversObject<{
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  recipientId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  requesterId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['FriendshipStatus'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type MessageResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = ResolversObject<{
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   conversationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -231,16 +284,21 @@ export type MessageResolvers<ContextType = GraphQLContext, ParentType extends Re
 }>;
 
 export type MutationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  acceptFriendRequest?: Resolver<ResolversTypes['Friendship'], ParentType, ContextType, RequireFields<MutationAcceptFriendRequestArgs, 'id'>>;
+  cancelFriendRequest?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationCancelFriendRequestArgs, 'id'>>;
   createConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationCreateConversationArgs, 'input'>>;
   deleteConversation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteConversationArgs, 'id'>>;
   joinConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationJoinConversationArgs, 'id'>>;
   leaveConversation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveConversationArgs, 'id'>>;
+  rejectFriendRequest?: Resolver<ResolversTypes['Friendship'], ParentType, ContextType, RequireFields<MutationRejectFriendRequestArgs, 'id'>>;
+  sendFriendRequest?: Resolver<ResolversTypes['Friendship'], ParentType, ContextType, RequireFields<MutationSendFriendRequestArgs, 'userId'>>;
   updateConversation?: Resolver<ResolversTypes['Conversation'], ParentType, ContextType, RequireFields<MutationUpdateConversationArgs, 'id' | 'input'>>;
 }>;
 
 export type QueryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   conversation?: Resolver<Maybe<ResolversTypes['Conversation']>, ParentType, ContextType, RequireFields<QueryConversationArgs, 'id'>>;
   conversations?: Resolver<Array<ResolversTypes['Conversation']>, ParentType, ContextType>;
+  friendships?: Resolver<Array<ResolversTypes['Friendship']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   publicConversations?: Resolver<Array<ResolversTypes['Conversation']>, ParentType, ContextType, Partial<QueryPublicConversationsArgs>>;
 }>;
@@ -254,6 +312,7 @@ export type UserResolvers<ContextType = GraphQLContext, ParentType extends Resol
 
 export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   Conversation?: ConversationResolvers<ContextType>;
+  Friendship?: FriendshipResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
