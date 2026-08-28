@@ -36,6 +36,12 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
     conversationId: z.string(),
   }),
   z.object({
+    type: z.literal('presence.changed'),
+    userId: z.string(),
+    online: z.boolean(),
+    nodes: z.array(z.string()),
+  }),
+  z.object({
     type: z.literal('error'),
     code: z.string(),
     message: z.string(),

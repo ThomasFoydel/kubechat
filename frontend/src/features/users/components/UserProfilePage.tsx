@@ -1,15 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Circle } from 'lucide-react'
 import type { FriendshipResponse } from '@kubechat/contracts'
 
+import { Toast } from '@/components/ui/Toast'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useChatContext } from '@/features/chat/context/ChatProvider'
 import { useFriendships } from '@/features/friendships/hooks/useFriendships'
 import { ConfirmationDialog } from '@/features/chat/components/ConfirmationDialog'
 
-import { getUserById } from '../api/users.api'
+import {
+  getUserById,
+  getUserPresence,
+} from '../api/users.api'
 
 interface UserProfilePageProps {
   userId: string
@@ -18,11 +23,30 @@ interface UserProfilePageProps {
 export function UserProfilePage({ userId }: UserProfilePageProps) {
   const { user: currentUser } = useAuth()
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
+  const [friendRequestMessage, setFriendRequestMessage] = useState<string | null>(
+    null,
+  )
+
+  const {
+    presenceByUserId,
+    setUserPresence,
+  } = useChatContext()
 
   const userQuery = useQuery({
     queryKey: ['users', userId],
     queryFn: () => getUserById(userId),
   })
+
+  const presenceQuery = useQuery({
+    queryKey: ['users', userId, 'presence'],
+    queryFn: () => getUserPresence(userId),
+  })
+
+  useEffect(() => {
+    if (presenceQuery.data) {
+      setUserPresence(userId, presenceQuery.data)
+    }
+  }, [presenceQuery.data, setUserPresence, userId])
 
   const {
     friendships,
@@ -44,26 +68,70 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
 
   const isSelf = currentUser?.id === userId
 
+  const closeFriendRequestToast = useCallback(() => {
+    setFriendRequestMessage(null)
+  }, [])
+
   async function handleSendFriendRequest() {
-    await sendFriendRequest(userId)
+    closeFriendRequestToast()
+
+    try {
+      await sendFriendRequest(userId)
+    } catch (error) {
+      setFriendRequestMessage(
+        error instanceof Error
+          ? error.message
+          : 'Failed to send friend request.',
+      )
+    }
   }
 
   async function handleAcceptFriendRequest(
     friendship: FriendshipResponse,
   ) {
-    await acceptFriendRequest(friendship.id)
+    closeFriendRequestToast()
+
+    try {
+      await acceptFriendRequest(friendship.id)
+    } catch (error) {
+      setFriendRequestMessage(
+        error instanceof Error
+          ? error.message
+          : 'This friend request is no longer available.',
+      )
+    }
   }
 
   async function handleRejectFriendRequest(
     friendship: FriendshipResponse,
   ) {
-    await rejectFriendRequest(friendship.id)
+    closeFriendRequestToast()
+
+    try {
+      await rejectFriendRequest(friendship.id)
+    } catch (error) {
+      setFriendRequestMessage(
+        error instanceof Error
+          ? error.message
+          : 'This friend request is no longer available.',
+      )
+    }
   }
 
   async function handleCancelFriendRequest(
     friendship: FriendshipResponse,
   ) {
-    await cancelFriendRequest(friendship.id)
+    closeFriendRequestToast()
+
+    try {
+      await cancelFriendRequest(friendship.id)
+    } catch (error) {
+      setFriendRequestMessage(
+        error instanceof Error
+          ? error.message
+          : 'This friend request is no longer pending.',
+      )
+    }
   }
 
   async function handleRemoveFriend() {
@@ -122,12 +190,21 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
   if (userQuery.isError || !userQuery.data) {
     return (
       <div className="p-6">
-        <p className="text-sm text-destructive">Failed to load user.</p>
+        <p className="text-sm text-destructive">
+          Failed to load user.
+        </p>
       </div>
     )
   }
 
   const user = userQuery.data
+
+  const presence =
+    presenceByUserId[user.id] ??
+    presenceQuery.data ?? {
+      online: false,
+      nodes: [],
+    }
 
   return (
     <div className="h-full overflow-y-auto p-6">
@@ -136,20 +213,26 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
           <div className="flex items-center gap-3">
             <Circle
               className={`h-3 w-3 fill-current ${
-                user.id === currentUser?.id
+                presence.online
                   ? 'text-green-500'
                   : 'text-muted-foreground'
               }`}
             />
 
             <div>
-              <h1 className="text-2xl font-bold">{user.username}</h1>
+              <h1 className="text-2xl font-bold">
+                {user.username}
+              </h1>
 
               {user.id === currentUser?.id && (
                 <p className="text-sm text-muted-foreground">
                   Your profile
                 </p>
               )}
+
+              <p className="text-sm text-muted-foreground">
+                {presence.online ? 'Online' : 'Offline'}
+              </p>
             </div>
           </div>
         </div>
@@ -189,7 +272,9 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
 
                     <button
                       type="button"
-                      onClick={() => handleCancelFriendRequest(friendship)}
+                      onClick={() =>
+                        handleCancelFriendRequest(friendship)
+                      }
                       disabled={isMutating}
                       className="mt-3 cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -209,7 +294,9 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
                     <div className="mt-3 flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => handleAcceptFriendRequest(friendship)}
+                        onClick={() =>
+                          handleAcceptFriendRequest(friendship)
+                        }
                         disabled={isMutating}
                         className="cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -218,7 +305,9 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
 
                       <button
                         type="button"
-                        onClick={() => handleRejectFriendRequest(friendship)}
+                        onClick={() =>
+                          handleRejectFriendRequest(friendship)
+                        }
                         disabled={isMutating}
                         className="cursor-pointer rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -259,6 +348,12 @@ export function UserProfilePage({ userId }: UserProfilePageProps) {
         onConfirm={handleRemoveFriend}
         onCancel={() => setIsRemoveDialogOpen(false)}
         isConfirming={isMutating}
+      />
+
+      <Toast
+        open={friendRequestMessage !== null}
+        message={friendRequestMessage ?? ''}
+        onClose={closeFriendRequestToast}
       />
     </div>
   )

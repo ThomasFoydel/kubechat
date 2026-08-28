@@ -11,7 +11,11 @@ export class WebSocketConnectionManager {
 
   private userConnections = new Map<WebSocket, UserConnection>()
 
-  registerUserConnection(userId: string, connectionId: string, socket: WebSocket): void {
+  registerUserConnection(
+    userId: string,
+    connectionId: string,
+    socket: WebSocket,
+  ): void {
     this.userConnections.set(socket, {
       userId,
       connectionId,
@@ -24,10 +28,12 @@ export class WebSocketConnectionManager {
   }
 
   getUserConnections(): Array<{ userId: string; connectionId: string }> {
-    return Array.from(this.userConnections.values()).map(({ userId, connectionId }) => ({
-      userId,
-      connectionId,
-    }))
+    return Array.from(this.userConnections.values()).map(
+      ({ userId, connectionId }) => ({
+        userId,
+        connectionId,
+      }),
+    )
   }
 
   subscribe(conversationId: string, socket: WebSocket): boolean {
@@ -92,6 +98,14 @@ export class WebSocketConnectionManager {
     }
 
     for (const socket of connections) {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(message)
+      }
+    }
+  }
+
+  broadcastAll(message: string): void {
+    for (const socket of this.userConnections.keys()) {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(message)
       }

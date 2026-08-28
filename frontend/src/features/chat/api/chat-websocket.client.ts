@@ -92,7 +92,9 @@ export class ChatWebSocketClient {
 
     const isReconnect = this.reconnectAttempt > 0
 
-    this.options.onStatusChange(isReconnect ? 'reconnecting' : 'connecting')
+    this.options.onStatusChange(
+      isReconnect ? 'reconnecting' : 'connecting',
+    )
 
     const socket = new WebSocket(getWebSocketUrl())
 
@@ -193,7 +195,11 @@ export class ChatWebSocketClient {
     }
   }
 
-  sendMessage(conversationId: string, content: string, clientMessageId: string): void {
+  sendMessage(
+    conversationId: string,
+    content: string,
+    clientMessageId: string,
+  ): void {
     this.send({
       type: 'message.send',
       conversationId,

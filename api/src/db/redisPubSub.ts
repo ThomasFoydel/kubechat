@@ -1,9 +1,12 @@
-import { MessageResponse } from '@kubechat/contracts'
+import type { MessageResponse } from '@kubechat/contracts'
 import { randomUUID } from 'crypto'
 import { createClient } from 'redis'
+
 import { config } from '../config/env'
 
 const websocketChannelPrefix = 'kubechat:websocket:node:'
+
+const presenceChannel = 'kubechat:websocket:presence'
 
 const conversationNodesPrefix = 'kubechat:websocket:conversation:'
 
@@ -45,7 +48,19 @@ export interface MessageCreatedEvent {
   }
 }
 
-export type WebSocketEvent = MessageCreatedEvent
+export interface PresenceChangedEvent {
+  eventId: string
+  eventType: 'presence.changed'
+  version: 1
+  occurredAt: string
+  payload: {
+    userId: string
+    online: boolean
+    nodes: string[]
+  }
+}
+
+export type WebSocketEvent = MessageCreatedEvent | PresenceChangedEvent
 
 type WebSocketEventHandler = (event: WebSocketEvent) => void
 
@@ -75,7 +90,7 @@ export async function initializeRedisPubSub(handler: WebSocketEventHandler): Pro
       const event = JSON.parse(message) as WebSocketEvent
 
       if (event.eventType !== 'message.created') {
-        console.warn('Ignoring unknown Redis event:', event.eventType)
+        console.warn('Ignoring unexpected node WebSocket event:', event.eventType)
 
         return
       }
@@ -83,6 +98,22 @@ export async function initializeRedisPubSub(handler: WebSocketEventHandler): Pro
       handler(event)
     } catch (error) {
       console.error('Failed to process Redis WebSocket event:', error)
+    }
+  })
+
+  await subscriber.subscribe(presenceChannel, (message) => {
+    try {
+      const event = JSON.parse(message) as WebSocketEvent
+
+      if (event.eventType !== 'presence.changed') {
+        console.warn('Ignoring unexpected presence event:', event.eventType)
+
+        return
+      }
+
+      handler(event)
+    } catch (error) {
+      console.error('Failed to process Redis presence event:', error)
     }
   })
 }
@@ -122,13 +153,9 @@ export async function publishMessageCreated(
 ): Promise<void> {
   const event: MessageCreatedEvent = {
     eventId: randomUUID(),
-
     eventType: 'message.created',
-
     version: 1,
-
     occurredAt: new Date().toISOString(),
-
     payload: {
       conversationId,
       message,
@@ -141,8 +168,30 @@ export async function publishMessageCreated(
   const nodes = await getConversationNodes(conversationId)
 
   await Promise.all(
-    nodes.map((nodeId) => publisher.publish(`${websocketChannelPrefix}${nodeId}`, serializedEvent)),
+    nodes.map((nodeId) =>
+      publisher.publish(`${websocketChannelPrefix}${nodeId}`, serializedEvent),
+    ),
   )
+}
+
+export async function publishPresenceChanged(
+  userId: string,
+  online: boolean,
+  nodes: string[],
+): Promise<void> {
+  const event: PresenceChangedEvent = {
+    eventId: randomUUID(),
+    eventType: 'presence.changed',
+    version: 1,
+    occurredAt: new Date().toISOString(),
+    payload: {
+      userId,
+      online,
+      nodes,
+    },
+  }
+
+  await publisher.publish(presenceChannel, JSON.stringify(event))
 }
 
 export async function disconnectRedisPubSub(): Promise<void> {

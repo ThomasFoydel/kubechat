@@ -3,6 +3,7 @@ import { IncomingMessage } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 
 import {
+  getUserPresence,
   refreshUserPresence,
   registerUserPresence,
   unregisterUserPresence,
@@ -11,6 +12,7 @@ import {
   initializeRedisPubSub,
   MessageCreatedEvent,
   publishMessageCreated,
+  publishPresenceChanged,
   refreshConversationNodeLease,
   registerConversationNode,
   unregisterConversationNode,
@@ -73,7 +75,40 @@ function handleMessageCreatedEvent(event: MessageCreatedEvent): void {
     clientMessageId: event.payload.clientMessageId,
   }
 
-  connectionManager.broadcast(event.payload.conversationId, JSON.stringify(serverMessage))
+  connectionManager.broadcast(
+    event.payload.conversationId,
+    JSON.stringify(serverMessage),
+  )
+}
+
+function handlePresenceChangedEvent(
+  event: Extract<
+    import('../db/redisPubSub').WebSocketEvent,
+    { eventType: 'presence.changed' }
+  >,
+): void {
+  const serverMessage: ServerMessage = {
+    type: 'presence.changed',
+    userId: event.payload.userId,
+    online: event.payload.online,
+    nodes: event.payload.nodes,
+  }
+
+  connectionManager.broadcastAll(JSON.stringify(serverMessage))
+}
+
+function handleWebSocketEvent(
+  event: import('../db/redisPubSub').WebSocketEvent,
+): void {
+  if (event.eventType === 'message.created') {
+    handleMessageCreatedEvent(event)
+
+    return
+  }
+
+  if (event.eventType === 'presence.changed') {
+    handlePresenceChangedEvent(event)
+  }
 }
 
 async function handleMessage(
@@ -93,7 +128,10 @@ async function handleMessage(
       return
     }
 
-    const firstLocalSubscriber = connectionManager.subscribe(message.conversationId, socket)
+    const firstLocalSubscriber = connectionManager.subscribe(
+      message.conversationId,
+      socket,
+    )
 
     if (firstLocalSubscriber) {
       await registerConversationNode(message.conversationId)
@@ -108,7 +146,10 @@ async function handleMessage(
   }
 
   if (message.type === 'conversation.unsubscribe') {
-    const lastLocalSubscriber = connectionManager.unsubscribe(message.conversationId, socket)
+    const lastLocalSubscriber = connectionManager.unsubscribe(
+      message.conversationId,
+      socket,
+    )
 
     if (lastLocalSubscriber) {
       await unregisterConversationNode(message.conversationId)
@@ -154,9 +195,13 @@ async function handleMessage(
       return
     }
 
-    const createdMessage = await messageService.createMessage(message.conversationId, userId, {
-      content: parsed.data.content,
-    })
+    const createdMessage = await messageService.createMessage(
+      message.conversationId,
+      userId,
+      {
+        content: parsed.data.content,
+      },
+    )
 
     const serverMessage: ServerMessage = {
       type: 'message.created',
@@ -189,17 +234,29 @@ async function handleSocketClose(
   const emptyConversations = connectionManager.unsubscribeAll(socket)
 
   await Promise.all(
-    emptyConversations.map((conversationId) => unregisterConversationNode(conversationId)),
+    emptyConversations.map((conversationId) =>
+      unregisterConversationNode(conversationId),
+    ),
   )
 
   await unregisterUserPresence(userId, connectionId)
+
+  const presence = await getUserPresence(userId)
+
+  await publishPresenceChanged(
+    userId,
+    presence.online,
+    presence.nodes,
+  )
 }
 
 async function refreshLeases(): Promise<void> {
   const conversations = connectionManager.getSubscribedConversationIds()
 
   await Promise.all(
-    conversations.map((conversationId) => refreshConversationNodeLease(conversationId)),
+    conversations.map((conversationId) =>
+      refreshConversationNodeLease(conversationId),
+    ),
   )
 }
 
@@ -207,7 +264,9 @@ async function refreshUserLeases(): Promise<void> {
   const connections = connectionManager.getUserConnections()
 
   await Promise.all(
-    connections.map(({ userId, connectionId }) => refreshUserPresence(userId, connectionId)),
+    connections.map(async ({ userId, connectionId }) => {
+      await refreshUserPresence(userId, connectionId)
+    }),
   )
 }
 
@@ -229,7 +288,19 @@ export function createWebSocketServer(): WebSocketServer {
 
         await registerUserPresence(userId, connectionId)
 
-        connectionManager.registerUserConnection(userId, connectionId, socket)
+        const presence = await getUserPresence(userId)
+
+        await publishPresenceChanged(
+          userId,
+          presence.online,
+          presence.nodes,
+        )
+
+        connectionManager.registerUserConnection(
+          userId,
+          connectionId,
+          socket,
+        )
 
         socket.on('message', (data) => {
           const message = parseMessage(data)
@@ -247,7 +318,9 @@ export function createWebSocketServer(): WebSocketServer {
               socket,
               'INTERNAL_ERROR',
               'An unexpected error occurred',
-              message.type === 'message.send' ? message.clientMessageId : undefined,
+              message.type === 'message.send'
+                ? message.clientMessageId
+                : undefined,
             )
           })
         })
@@ -271,7 +344,7 @@ export function createWebSocketServer(): WebSocketServer {
 }
 
 export async function initializeWebSocketPubSub(): Promise<void> {
-  await initializeRedisPubSub(handleMessageCreatedEvent)
+  await initializeRedisPubSub(handleWebSocketEvent)
 
   leaseRefreshInterval = setInterval(() => {
     void refreshLeases().catch((error) => {
