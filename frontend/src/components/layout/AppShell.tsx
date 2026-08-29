@@ -23,6 +23,10 @@ function getPageTitle(pathname: string): string {
     return 'Chat'
   }
 
+  if (pathname === '/friends' || pathname.startsWith('/friends/')) {
+    return 'Friends'
+  }
+
   if (pathname === '/users' || pathname.startsWith('/users/')) {
     return 'Users'
   }

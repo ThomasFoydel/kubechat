@@ -18,6 +18,12 @@ enum ConversationMemberRole {
   MEMBER
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id           String               @id @default(uuid())
   username     String               @unique
@@ -25,8 +31,26 @@ model User {
   passwordHash String
   createdAt    DateTime             @default(now())
 
-  messages     Message[]
-  memberships  ConversationMember[]
+  messages           Message[]
+  memberships        ConversationMember[]
+  friendshipsSent    Friendship[] @relation("FriendshipRequester")
+  friendshipsReceived Friendship[] @relation("FriendshipRecipient")
+}
+
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId String
+  recipientId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  requester User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient User @relation("FriendshipRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId, status])
+  @@index([requesterId, status])
 }
 
 model Conversation {

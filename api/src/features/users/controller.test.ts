@@ -11,6 +11,10 @@ vi.mock('./service', () => ({
   },
 }))
 
+vi.mock('../../db/redisPresence', () => ({
+  getUserPresence: vi.fn(),
+}))
+
 describe('getUserById', () => {
   it('returns the user when found', async () => {
     const user = makeUser()

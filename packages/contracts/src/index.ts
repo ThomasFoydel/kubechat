@@ -50,3 +50,10 @@ export {
   type ClientMessage,
   type ServerMessage,
 } from './websocket'
+
+export {
+  friendshipResponseSchema,
+  friendshipStatusSchema,
+  type FriendshipResponse,
+  type FriendshipStatus,
+} from './friendships'

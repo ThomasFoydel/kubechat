@@ -1,0 +1,26 @@
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+type Friendship {
+  id: ID!
+  requesterId: ID!
+  recipientId: ID!
+  status: FriendshipStatus!
+  createdAt: String!
+  updatedAt: String!
+}
+
+extend type Query {
+  friendships: [Friendship!]!
+}
+
+extend type Mutation {
+  sendFriendRequest(userId: ID!): Friendship!
+  acceptFriendRequest(id: ID!): Friendship!
+  rejectFriendRequest(id: ID!): Friendship!
+  cancelFriendRequest(id: ID!): Boolean!
+  removeFriend(id: ID!): Boolean!
+}

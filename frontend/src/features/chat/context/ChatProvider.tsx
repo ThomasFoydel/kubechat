@@ -10,9 +10,12 @@ import {
   useState,
 } from 'react'
 
-import { ChatWebSocketClient, type WebSocketConnectionStatus } from '../api/chat-websocket.client'
+import {
+  ChatWebSocketClient,
+  type WebSocketConnectionStatus,
+} from '../api/chat-websocket.client'
 
-import type { Message } from '@kubechat/contracts'
+import type { Message, UserPresence } from '@kubechat/contracts'
 
 interface ChatContextValue {
   messages: Message[]
@@ -24,6 +27,8 @@ interface ChatContextValue {
   unsubscribe: (conversationId: string) => void
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   clearSendError: () => void
+  presenceByUserId: Record<string, UserPresence>
+  setUserPresence: (userId: string, presence: UserPresence) => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -40,9 +45,11 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
   const [sendError, setSendError] = useState<string | null>(null)
 
-  const [subscribedConversations, setSubscribedConversations] = useState<Set<string>>(
-    new Set(),
-  )
+  const [subscribedConversations, setSubscribedConversations] =
+    useState<Set<string>>(new Set())
+
+  const [presenceByUserId, setPresenceByUserId] =
+    useState<Record<string, UserPresence>>({})
 
   const clientRef = useRef<ChatWebSocketClient | null>(null)
 
@@ -74,7 +81,9 @@ export function ChatProvider({ children }: ChatProviderProps) {
           setSendError(null)
 
           setMessages((current) => {
-            const exists = current.some((existing) => existing.id === message.message.id)
+            const exists = current.some(
+              (existing) => existing.id === message.message.id,
+            )
 
             if (exists) {
               return current
@@ -84,12 +93,26 @@ export function ChatProvider({ children }: ChatProviderProps) {
           })
         }
 
+        if (message.type === 'presence.changed') {
+          setPresenceByUserId((current) => ({
+            ...current,
+            [message.userId]: {
+              online: message.online,
+              nodes: message.nodes,
+            },
+          }))
+        }
+
         if (message.type === 'error') {
           if (message.clientMessageId) {
             setSendError(message.message)
           }
 
-          console.error('WebSocket error:', message.code, message.message)
+          console.error(
+            'WebSocket error:',
+            message.code,
+            message.message,
+          )
         }
       },
 
@@ -180,11 +203,18 @@ export function ChatProvider({ children }: ChatProviderProps) {
       setSendError(null)
 
       try {
-        client.sendMessage(conversationId, content, clientMessageId)
+        client.sendMessage(
+          conversationId,
+          content,
+          clientMessageId,
+        )
 
         return true
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to send message'
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to send message'
 
         setSendError(message)
 
@@ -198,6 +228,16 @@ export function ChatProvider({ children }: ChatProviderProps) {
     setSendError(null)
   }, [])
 
+  const setUserPresence = useCallback(
+    (userId: string, presence: UserPresence) => {
+      setPresenceByUserId((current) => ({
+        ...current,
+        [userId]: presence,
+      }))
+    },
+    [],
+  )
+
   return (
     <ChatContext.Provider
       value={{
@@ -210,6 +250,8 @@ export function ChatProvider({ children }: ChatProviderProps) {
         unsubscribe,
         setMessages,
         clearSendError,
+        presenceByUserId,
+        setUserPresence,
       }}
     >
       {children}
