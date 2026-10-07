@@ -165,11 +165,18 @@ jobs:
 
       - name: Deploy analytics
         run: |
-          kubectl apply             -k k8s/base/analytics             -n ${{ steps.deployment.outputs.namespace }}
+          kubectl apply \
+            -k k8s/base/analytics \
+            -n ${{ steps.deployment.outputs.namespace }}
 
-          kubectl set image             deployment/kubechat-analytics             analytics=ghcr.io/thomasfoydel/kubechat-analytics:${{ github.sha }}             -n ${{ steps.deployment.outputs.namespace }}
+          kubectl set image \
+            deployment/kubechat-analytics \
+            analytics=ghcr.io/thomasfoydel/kubechat-analytics:${{ github.sha }} \
+            -n ${{ steps.deployment.outputs.namespace }}
 
-          kubectl rollout status             deployment/kubechat-analytics             -n ${{ steps.deployment.outputs.namespace }}
+          kubectl rollout status \
+            deployment/kubechat-analytics \
+            -n ${{ steps.deployment.outputs.namespace }}
 
       - name: Deploy frontend
         run: |
