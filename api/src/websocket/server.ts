@@ -12,6 +12,7 @@ import {
   initializeRedisPubSub,
   MessageCreatedEvent,
   publishMessageCreated,
+  publishMessageCreatedAnalytics,
   publishPresenceChanged,
   refreshConversationNodeLease,
   registerConversationNode,
@@ -219,6 +220,8 @@ async function handleMessage(
       createdMessage,
       message.clientMessageId,
     )
+
+    await publishMessageCreatedAnalytics(createdMessage)
   }
 }
 

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubechat-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubechat-analytics
+  template:
+    metadata:
+      labels:
+        app: kubechat-analytics
+    spec:
+      containers:
+        - name: analytics
+          image: ghcr.io/thomasfoydel/kubechat-analytics:latest
+
+          ports:
+            - containerPort: 5227
+
+          env:
+            - name: REDIS_URL
+              value: redis://kubechat-redis:6379
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5227
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5227
+            initialDelaySeconds: 15
+            periodSeconds: 20
