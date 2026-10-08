@@ -55,3 +55,6 @@ secrets/
 # Temporary files
 tmp/
 temp/
+# .NET
+**/bin/
+**/obj/

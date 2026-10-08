@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/Analytics.Api.props" />
-</Project>

@@ -12,7 +12,7 @@ builder.Services.AddHostedService<MessageEventConsumer>();
 var app = builder.Build();
 
 app.MapGet("/health", async () =>
-{
+{ 
     await redis.GetDatabase().PingAsync();
 
     return Results.Ok(new
