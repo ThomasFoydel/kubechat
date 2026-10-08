@@ -6,6 +6,8 @@ import { config } from '../config/env'
 
 const websocketChannelPrefix = 'kubechat:websocket:node:'
 
+const analyticsMessageCreatedChannel = 'kubechat:events:message.created'
+
 const presenceChannel = 'kubechat:websocket:presence'
 
 const conversationNodesPrefix = 'kubechat:websocket:conversation:'
@@ -45,6 +47,20 @@ export interface MessageCreatedEvent {
     conversationId: string
     message: MessageResponse
     clientMessageId?: string
+  }
+}
+
+export interface MessageCreatedAnalyticsEvent {
+  eventId: string
+  eventType: 'message.created'
+  version: 1
+  occurredAt: string
+  payload: {
+    messageId: string
+    conversationId: string
+    userId: string
+    contentLength: number
+    createdAt: string
   }
 }
 
@@ -171,6 +187,29 @@ export async function publishMessageCreated(
     nodes.map((nodeId) =>
       publisher.publish(`${websocketChannelPrefix}${nodeId}`, serializedEvent),
     ),
+  )
+}
+
+export async function publishMessageCreatedAnalytics(
+  message: MessageResponse,
+): Promise<void> {
+  const event: MessageCreatedAnalyticsEvent = {
+    eventId: randomUUID(),
+    eventType: 'message.created',
+    version: 1,
+    occurredAt: new Date().toISOString(),
+    payload: {
+      messageId: message.id,
+      conversationId: message.conversationId,
+      userId: message.userId,
+      contentLength: message.content.length,
+      createdAt: message.createdAt,
+    },
+  }
+
+  await publisher.publish(
+    analyticsMessageCreatedChannel,
+    JSON.stringify(event),
   )
 }
 

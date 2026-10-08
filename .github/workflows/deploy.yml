@@ -57,6 +57,17 @@ jobs:
             ghcr.io/thomasfoydel/kubechat-api:${{ github.ref_name }}
             ${{ github.ref_name == 'master' && 'ghcr.io/thomasfoydel/kubechat-api:latest' || '' }}
 
+      - name: Build and push analytics image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./analytics/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/thomasfoydel/kubechat-analytics:${{ github.sha }}
+            ghcr.io/thomasfoydel/kubechat-analytics:${{ github.ref_name }}
+            ${{ github.ref_name == 'master' && 'ghcr.io/thomasfoydel/kubechat-analytics:latest' || '' }}
+
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
@@ -150,6 +161,21 @@ jobs:
 
           kubectl rollout status \
             deployment/kubechat-api \
+            -n ${{ steps.deployment.outputs.namespace }}
+
+      - name: Deploy analytics
+        run: |
+          kubectl apply \
+            -k k8s/base/analytics \
+            -n ${{ steps.deployment.outputs.namespace }}
+
+          kubectl set image \
+            deployment/kubechat-analytics \
+            analytics=ghcr.io/thomasfoydel/kubechat-analytics:${{ github.sha }} \
+            -n ${{ steps.deployment.outputs.namespace }}
+
+          kubectl rollout status \
+            deployment/kubechat-analytics \
             -n ${{ steps.deployment.outputs.namespace }}
 
       - name: Deploy frontend
